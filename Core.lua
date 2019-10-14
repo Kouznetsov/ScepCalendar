@@ -1,5 +1,7 @@
 local _, core = ...
 
+
+
 SLASH_FRAMESTK1 = "/fs"
 SlashCmdList.FRAMESTK = function()
     LoadAddOn("Blizzard_DebugTools")
@@ -70,7 +72,7 @@ end
 -- Main Frame
 mainContainer:SetSize(700, 550)
 mainContainer:SetPoint("CENTER", UIParent, "CENTER")
-mainContainer.title = mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+mainContainer.title = mainContainer:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
 mainContainer.title:SetPoint("CENTER", mainContainer.TitleBg, "CENTER", 10, 0)
 mainContainer.title:SetText("Scep Calendar")
 
@@ -134,6 +136,25 @@ for k, v in next, weekdayStrings do
     )
 end
 
+function showEventsForDay(day)
+    if (mainContainer.eventsForDayFrame == nil) then
+        mainContainer.eventsForDayFrame =
+            CreateFrame("Frame", "EventsForDay", mainContainer, "BasicFrameTemplateWithInset")
+        mainContainer.eventsForDayFrame:SetSize(200, 550)
+        mainContainer.eventsForDayFrame:SetPoint("LEFT", mainContainer, "LEFT", -200, 0)
+    end
+    mainContainer.eventsForDayFrame:Show()
+    if (mainContainer.eventsForDayFrame.title == nil) then
+        mainContainer.eventsForDayFrame.title =
+            mainContainer.eventsForDayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    end
+    mainContainer.eventsForDayFrame.title:SetText(
+        weekdayStrings[get_day_of_week(day, currentMonth, currentYear)] ..
+            " " .. day .. " " .. monthsStrings[currentMonth]
+    )
+    mainContainer.eventsForDayFrame.title:SetPoint("TOPLEFT", mainContainer.eventsForDayFrame, "TOPLEFT", 10, -30)
+end
+
 -- Days frames
 local dayFramesPool = {}
 for i = 1, 31, 1 do
@@ -149,16 +170,24 @@ function generateDayFrames()
     mainContainer.monthContainer.days = {}
     for i = 1, getDaysInMonth(currentMonth) + firstDayOfMonth - 1, 1 do
         if (firstDayOfMonth <= i) then
-            local dayFrame = dayFramesPool[i-firstDayOfMonth + 1]
+            local dayNumber = i - firstDayOfMonth + 1
+            local dayFrame = dayFramesPool[dayNumber]
             local yOffset = math.floor(((i - 1) / 7)) * -70
             local xOffset = ((i - 1) % 7) * 97
 
             dayFrame:SetSize(97, 70)
             dayFrame:SetPoint("TOPLEFT", mainContainer.monthContainer, "TOPLEFT", xOffset, yOffset)
             dayFrame:Show()
-            if (dayFrame.number == nil) then dayFrame.number = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge") end;
-            dayFrame.number:SetText(i - firstDayOfMonth + 1);
-            dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER");
+            if (dayFrame.number == nil) then
+                dayFrame.number = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+            end
+            dayFrame.number:SetText(dayNumber)
+            dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER")
+            dayFrame:SetScript("OnMouseDown", function(self, button)
+                if (button == "LeftButton") then
+                    showEventsForDay(dayNumber);
+                end
+            end)
             mainContainer.monthContainer.days[i] = dayFrame
         end
     end
