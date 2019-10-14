@@ -156,6 +156,9 @@ function generateDayFrames()
             dayFrame:SetSize(97, 70)
             dayFrame:SetPoint("TOPLEFT", mainContainer.monthContainer, "TOPLEFT", xOffset, yOffset)
             dayFrame:Show()
+            if (dayFrame.number == nil) then dayFrame.number = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge") end;
+            dayFrame.number:SetText(i - firstDayOfMonth + 1);
+            dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER");
             mainContainer.monthContainer.days[i] = dayFrame
         end
     end
