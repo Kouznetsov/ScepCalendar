@@ -1,6 +1,5 @@
-local _, core = ...
-
-
+local _, NS = ...;
+NS = NS or {};
 
 SLASH_FRAMESTK1 = "/fs"
 SlashCmdList.FRAMESTK = function()
@@ -179,7 +178,7 @@ function generateDayFrames()
             dayFrame:SetPoint("TOPLEFT", mainContainer.monthContainer, "TOPLEFT", xOffset, yOffset)
             dayFrame:Show()
             if (dayFrame.number == nil) then
-                dayFrame.number = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+                dayFrame.number = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableLarge")
             end
             dayFrame.number:SetText(dayNumber)
             dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER")
@@ -194,108 +193,3 @@ function generateDayFrames()
 end
 
 generateDayFrames()
-
---[[
-ScepCalendar = LibStub("AceAddon-3.0"):NewAddon("ScepCalendar", "AceConsole-3.0", "AceComm-3.0")
-local l = {
-    "a2321281c76b3d375fee0e49b0fde8e31758a849b3a34410b5227220b1430fea",
-    "d43b518b8391f7fc1e525cc1062eaeca40e3f0791fa042dfb427fe9ca09a278c",
-    "13d75b53f95d2516ecc4d72b6edafe0aac711704114e77e1332e5e37e3c449f6"
-}
-local c = sha256(UnitName("player"))
-local CALLOW = false
-
-for k, v in next, l do
-    if (v == c) then
-        CALLOW = true
-        break
-    end
-end
-
-function ScepCalendar:OnInitialize()
-end
-
-function ScepCalendar:OnEnable()
-    self:Print("coucou")
-    -- Called when the addon is enabled
-end
-
-function ScepCalendar:OnDisable()
-    print("ScepCalendar disabled")
-    -- Called when the addon is disabled
-end
-
-local onCommCallback = function(prefix, message, channel, sender)
-    print("Received  new comm: " .. "prefix: '" .. prefix .. "' message: '" .. message .. "'")
-end
-local COMMPREFIX = "ScepCalendarComm"
-
-ScepCalendar:RegisterComm(COMMPREFIX, onCommCallback)
---ScepCalendar:SendCommMessage(COMMPREFIX, "c", "GUILD"); -- works
-
-local AceGUI = LibStub("AceGUI-3.0")
-local textStore
-
--- Main container
-local mainContainer = AceGUI:Create("Frame")
-mainContainer:SetTitle("Scep Calendar")
-mainContainer:SetWidth(700)
-mainContainer:SetCallback(
-    "OnClose",
-    function(widget)
-        AceGUI:Release(widget)
-    end
-)
-mainContainer:SetStatusText("Report les bugs à Bordel")
-mainContainer:SetLayout("List")
-
---month:
-local monthText = 
-
--- Calendar view
-local calendarView = AceGUI:Create("SimpleGroup")
---calendarView:SetFullHeight(true)
-calendarView:SetPoint("CENTER")
-calendarView:SetFullWidth(true)
-calendarView:SetLayout("Flow")
-
-for i = 1, 31, 1 do
-    local dayContainer = AceGUI:Create("SimpleGroup")
-    dayContainer:SetHeight(50)
-    dayContainer:SetWidth(100)
-
-    --local icon = AceGUI:Create("Icon");
-    --print("icons/".. i .. ".blp");
-    --icon:SetImage("icons\\".. i .. ".blp");
-    local il = AceGUI:Create("InteractiveLabel")
-    il:SetText(i)
-    il:SetCallback("OnEnter", function(self) self:SetColor(0.9, 0.9, 0) end)
-    il:SetCallback("OnLeave", function(self) self:SetColor(1, 1, 1) end)
-    il:SetWidth(30);
-    il:SetImage("icons/".. i .. ".blp")
-    il:SetHeight(50);
-    il:SetPoint("CENTER", 30, 30); 
-
-    local btn = AceGUI:Create("Button");
-    btn:SetText(i);
-    btn:SetWidth(50);
-
-    dayContainer:AddChild(btn)
-    calendarView:AddChild(dayContainer)
-end
-
-mainContainer:AddChild(calendarView)
-
--- Create event button
-local createEventBtn = AceGUI:Create("Button")
-createEventBtn:SetText("Créer un event")
-createEventBtn:SetPoint("RIGHT")
-createEventBtn:SetDisabled(not CALLOW) -- disabled if unauthorized
-createEventBtn:SetCallback(
-    "OnClick",
-    function()
-        print("clicked create")
-    end
-)
-mainContainer:AddChild(createEventBtn)
-]]

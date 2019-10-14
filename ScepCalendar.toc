@@ -8,6 +8,8 @@
 ## X-Embeds: Ace3
 
 embeds.xml
+enums.lua
 sha256.lua
 config.lua
-Core.lua
+logic.lua
+ui.lua

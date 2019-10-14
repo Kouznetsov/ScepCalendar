@@ -1,3 +1,7 @@
+local _, NS = ...;
+NS = NS or {};
+NS.utils = {}
+
 local MOD = 2^32
 local MODM = MOD-1
 local function memoize(f)
@@ -155,7 +159,7 @@ local function digestblock(msg, i, H)
 end
 
 
-sha256 = function(msg)
+NS.utils.sha256 = function(msg)
     msg = preproc(msg, #msg)
     local H = initH256({})
     for i = 1, #msg, 64 do digestblock(msg, i, H) end
