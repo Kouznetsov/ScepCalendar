@@ -26,8 +26,8 @@ local COMMPREFIX = "ScepCalendarComm"
 ScepCalendar:RegisterComm(COMMPREFIX, onCommCallback)
 --ScepCalendar:SendCommMessage(COMMPREFIX, "c", "GUILD"); -- works
 
-function ScepCalendar:CreateNewEvent()
-    
+function ScepCalendar:CreateNewEvent(event)
+    self:Print("Creating event");
 end
 
 NS.logic.getEventsForMonth = function(month, year)

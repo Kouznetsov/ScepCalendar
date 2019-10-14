@@ -8,6 +8,7 @@
 ## X-Embeds: Ace3
 
 embeds.xml
+kethoEditBox.lua
 enums.lua
 sha256.lua
 config.lua

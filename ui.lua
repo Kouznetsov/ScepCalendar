@@ -1,5 +1,5 @@
-local _, NS = ...;
-NS = NS or {};
+local _, NS = ...
+NS = NS or {}
 
 SLASH_FRAMESTK1 = "/fs"
 SlashCmdList.FRAMESTK = function()
@@ -135,7 +135,63 @@ for k, v in next, weekdayStrings do
     )
 end
 
+function showNewEventFrame()
+    local newEventFrame =
+        mainContainer.newEventFrame or
+        CreateFrame("Frame", "CreateEventFrame", mainContainer, "BasicFrameTemplateWithInset")
+
+        --[[]
+    if (mainContainer.eventDetailsFrame ~= nil) then
+        mainContainer.eventDetailsFrame:Hide()
+    end
+    ]]
+    newEventFrame:SetSize(300, 550)
+    newEventFrame:SetPoint("RIGHT", mainContainer, "RIGHT", 300, 0)
+    if (newEventFrame.title == nil) then
+        newEventFrame.title = newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    end
+    newEventFrame.title:SetText("Nouvel event")
+    newEventFrame.title:SetPoint("CENTER", newEventFrame, "TOP", 0, -45)
+    -- Event name
+    -- Edit
+    newEventFrame.eventNameEdit = newEventFrame.eventNameEdit or CreateFrame("EditBox", "NewEventNameEdit", newEventFrame, "InputBoxTemplate");
+    newEventFrame.eventNameEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -20, -75)
+    newEventFrame.eventNameEdit:SetMaxBytes(255);
+    newEventFrame.eventNameEdit:SetAutoFocus(false);
+    newEventFrame.eventNameEdit:SetSize(200, 25)
+    -- Label
+    newEventFrame.eventNameLabel = newEventFrame.eventNameLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.eventNameLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -82)
+    newEventFrame.eventNameLabel:SetText("Titre")
+
+    -- Event description
+    -- Edit
+    newEventFrame.eventDescriptionEdit = newEventFrame.eventDescriptionEdit or CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame, "UIPanelScrollFrameTemplate");
+    newEventFrame.eventDescriptionEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -20, -120)
+    newEventFrame.eventDescriptionEdit:SetAutoFocus(false);
+    newEventFrame.eventDescriptionEdit:SetMaxBytes(1024);
+    newEventFrame.eventDescriptionEdit:SetSize(200, 100);
+  
+    -- Label
+    newEventFrame.eventDescriptionLabel = newEventFrame.eventDescriptionLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.eventDescriptionLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -110)
+    newEventFrame.eventDescriptionLabel:SetText("Description")
+
+ 
+
+
+    -- Showing and setting to mainContainer
+    newEventFrame:Show()
+    mainContainer.newEventFrame = newEventFrame
+end
+
 function showEventsForDay(day)
+    if mainContainer.eventDetailsFrame then
+        mainContainer.eventDetailsFrame:Hide()
+    end
+    if mainContainer.newEventFrame then
+        mainContainer.newEventFrame:Hide()
+    end
     if (mainContainer.eventsForDayFrame == nil) then
         mainContainer.eventsForDayFrame =
             CreateFrame("Frame", "EventsForDay", mainContainer, "BasicFrameTemplateWithInset")
@@ -152,6 +208,20 @@ function showEventsForDay(day)
             " " .. day .. " " .. monthsStrings[currentMonth]
     )
     mainContainer.eventsForDayFrame.title:SetPoint("TOPLEFT", mainContainer.eventsForDayFrame, "TOPLEFT", 10, -30)
+    if (mainContainer.eventsForDayFrame.createEventBtn == nil and NS.config.isAdmin) then
+        mainContainer.eventsForDayFrame.createEventBtn =
+            CreateFrame("Button", "CreateEventBtn", mainContainer.eventsForDayFrame, "UIPanelButtonTemplate")
+        mainContainer.eventsForDayFrame.createEventBtn:SetText("Créer un nouvel event")
+        mainContainer.eventsForDayFrame.createEventBtn:SetScript("OnClick", showNewEventFrame)
+        mainContainer.eventsForDayFrame.createEventBtn:SetSize(180, 25)
+        mainContainer.eventsForDayFrame.createEventBtn:SetPoint(
+            "BOTTOM",
+            mainContainer.eventsForDayFrame,
+            "BOTTOM",
+            0,
+            15
+        )
+    end
 end
 
 -- Days frames
@@ -182,11 +252,14 @@ function generateDayFrames()
             end
             dayFrame.number:SetText(dayNumber)
             dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER")
-            dayFrame:SetScript("OnMouseDown", function(self, button)
-                if (button == "LeftButton") then
-                    showEventsForDay(dayNumber);
+            dayFrame:SetScript(
+                "OnMouseDown",
+                function(self, button)
+                    if (button == "LeftButton") then
+                        showEventsForDay(dayNumber)
+                    end
                 end
-            end)
+            )
             mainContainer.monthContainer.days[i] = dayFrame
         end
     end

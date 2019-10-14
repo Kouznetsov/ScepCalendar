@@ -158,7 +158,6 @@ local function digestblock(msg, i, H)
     H[8] = band(H[8] + h)
 end
 
-
 NS.utils.sha256 = function(msg)
     msg = preproc(msg, #msg)
     local H = initH256({})
