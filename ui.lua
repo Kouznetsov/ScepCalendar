@@ -148,12 +148,9 @@ function showNewEventFrame()
         newEventFrame.createEventBtn or
         CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
 
-    createEventBtn:SetEnabled(false)
-    --[[]
     if (mainContainer.eventDetailsFrame ~= nil) then
         mainContainer.eventDetailsFrame:Hide()
     end
-    ]]
     newEventFrame:SetSize(300, 300)
     newEventFrame:SetPoint("TOPRIGHT", mainContainer, "TOPRIGHT", 300, 0)
     if (newEventFrame.title == nil) then
@@ -328,6 +325,8 @@ function showNewEventFrame()
     createEventBtn:SetText("Créer")
     createEventBtn:SetPoint("BOTTOM", newEventFrame, "BOTTOM", 0, 18)
     createEventBtn:SetSize(100, 25)
+    createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
+
     newEventFrame.createEventBtn = createEventBtn
 
     -- Showing and setting to mainContainer

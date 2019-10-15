@@ -7,6 +7,7 @@ NS.enums.classes = {
     "Paladin",
     "Chasseur",
     "Voleur",
+    "priest",
     "dk",
     "Chaman",
     "Mage",
