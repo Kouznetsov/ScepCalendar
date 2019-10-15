@@ -144,14 +144,18 @@ function showNewEventFrame()
     local newEventFrame =
         mainContainer.newEventFrame or
         CreateFrame("Frame", "CreateEventFrame", mainContainer, "BasicFrameTemplateWithInset")
+    local createEventBtn =
+        newEventFrame.createEventBtn or
+        CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
 
+    createEventBtn:SetEnabled(false)
     --[[]
     if (mainContainer.eventDetailsFrame ~= nil) then
         mainContainer.eventDetailsFrame:Hide()
     end
     ]]
-    newEventFrame:SetSize(300, 550)
-    newEventFrame:SetPoint("RIGHT", mainContainer, "RIGHT", 300, 0)
+    newEventFrame:SetSize(300, 300)
+    newEventFrame:SetPoint("TOPRIGHT", mainContainer, "TOPRIGHT", 300, 0)
     if (newEventFrame.title == nil) then
         newEventFrame.title = newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     end
@@ -163,6 +167,12 @@ function showNewEventFrame()
         newEventFrame.eventNameEdit or CreateFrame("EditBox", "NewEventNameEdit", newEventFrame, "InputBoxTemplate")
     newEventFrame.eventNameEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -20, -75)
     newEventFrame.eventNameEdit:SetMaxBytes(255)
+    newEventFrame.eventNameEdit:SetScript(
+        "OnTextChanged",
+        function()
+            createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
+        end
+    )
     newEventFrame.eventNameEdit:SetAutoFocus(false)
     newEventFrame.eventNameEdit:SetSize(200, 25)
     -- Label
@@ -236,11 +246,11 @@ function showNewEventFrame()
     newEventFrame.yearLabel = yearLabel
 
     -- Time dropDowns
-    -- Hour dropdown
+    -- Minutes dropdown
     local minutesDropDown =
         newEventFrame.minutesDropDown or
         CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
-    minutesDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 127, -165)
+    minutesDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 75, -165)
     UIDropDownMenu_SetWidth(minutesDropDown, 40)
     UIDropDownMenu_SetText(minutesDropDown, chosenMinutes)
     UIDropDownMenu_Initialize(
@@ -265,12 +275,12 @@ function showNewEventFrame()
     newEventFrame.hourDropDown = hourDropDown
     newEventFrame.hLabel = newEventFrame.hLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newEventFrame.hLabel:SetText("h")
-    newEventFrame.hLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 130, -172)
-    -- Minutes dropdown
+    newEventFrame.hLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 80, -172)
+    -- Hour dropdown
     local hourDropDown =
         newEventFrame.hourDropDown or
         CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
-    hourDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 50, -165)
+    hourDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 0, -165)
     UIDropDownMenu_SetWidth(hourDropDown, 40)
     UIDropDownMenu_SetText(hourDropDown, chosenHour)
     UIDropDownMenu_Initialize(
@@ -295,32 +305,30 @@ function showNewEventFrame()
     -- Event description
     -- Edit
     newEventFrame.eventDescriptionEdit =
-        newEventFrame.eventDescriptionEdit or CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame)
-    newEventFrame.eventDescriptionEdit:SetBackdrop(
-        {
-            bgFile = [[Interface\Buttons\WHITE8x8]],
-            edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
-            edgeSize = 14,
-            insets = {left = 3, right = 3, top = 3, bottom = 3}
-        }
-    )
-    newEventFrame.eventDescriptionEdit:SetBackdropColor(0, 0, 0)
-    newEventFrame.eventDescriptionEdit:SetBackdropBorderColor(0.4, 0.4, 0.4)
+        newEventFrame.eventDescriptionEdit or
+        CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame, "InputBoxTemplate")
     newEventFrame.eventDescriptionEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -17, -230)
     newEventFrame.eventDescriptionEdit:SetAutoFocus(false)
-    newEventFrame.eventDescriptionEdit:SetMultiLine(true)
-    newEventFrame.eventDescriptionEdit:SetMaxBytes(1024)
-    newEventFrame.eventDescriptionEdit:SetText("\n\n\n\n")
+    newEventFrame.eventDescriptionEdit:SetMaxBytes(256)
     newEventFrame.eventDescriptionEdit:SetJustifyH("LEFT")
     newEventFrame.eventDescriptionEdit:SetJustifyV("CENTER")
-    newEventFrame.eventDescriptionEdit:SetSize(265, 200)
+    newEventFrame.eventDescriptionEdit:SetSize(265, 20)
     newEventFrame.eventDescriptionEdit:SetCursorPosition(0)
-    newEventFrame.eventDescriptionEdit:SetFont("Fonts\\FRIZQT__.TTF", 10)
+    --newEventFrame.eventDescriptionEdit:SetFont("Fonts\\FRIZQT__.TTF", 10)
     -- Label
     newEventFrame.eventDescriptionLabel =
         newEventFrame.eventDescriptionLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newEventFrame.eventDescriptionLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -210)
     newEventFrame.eventDescriptionLabel:SetText("Description")
+
+    -- Create Event btn
+    createEventBtn =
+        newEventFrame.createEventBtn or
+        CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
+    createEventBtn:SetText("Créer")
+    createEventBtn:SetPoint("BOTTOM", newEventFrame, "BOTTOM", 0, 18)
+    createEventBtn:SetSize(100, 25)
+    newEventFrame.createEventBtn = createEventBtn
 
     -- Showing and setting to mainContainer
     newEventFrame:Show()
