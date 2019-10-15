@@ -16,6 +16,7 @@ function get_day_of_week(dd, mm, yy)
     return dw, ({"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"})[dw]
 end
 
+local lastDayClicked = 1
 local mainContainer = CreateFrame("Frame", "ScepCalendarMainContainer", UIParent, "BasicFrameTemplateWithInset")
 
 local monthsStrings = {
@@ -136,11 +137,15 @@ for k, v in next, weekdayStrings do
 end
 
 function showNewEventFrame()
+    local chosenMonth = currentMonth
+    local chosenDay = lastDayClicked
+    local chosenHour = 20
+    local chosenMinutes = 45
     local newEventFrame =
         mainContainer.newEventFrame or
         CreateFrame("Frame", "CreateEventFrame", mainContainer, "BasicFrameTemplateWithInset")
 
-        --[[]
+    --[[]
     if (mainContainer.eventDetailsFrame ~= nil) then
         mainContainer.eventDetailsFrame:Hide()
     end
@@ -154,31 +159,168 @@ function showNewEventFrame()
     newEventFrame.title:SetPoint("CENTER", newEventFrame, "TOP", 0, -45)
     -- Event name
     -- Edit
-    newEventFrame.eventNameEdit = newEventFrame.eventNameEdit or CreateFrame("EditBox", "NewEventNameEdit", newEventFrame, "InputBoxTemplate");
+    newEventFrame.eventNameEdit =
+        newEventFrame.eventNameEdit or CreateFrame("EditBox", "NewEventNameEdit", newEventFrame, "InputBoxTemplate")
     newEventFrame.eventNameEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -20, -75)
-    newEventFrame.eventNameEdit:SetMaxBytes(255);
-    newEventFrame.eventNameEdit:SetAutoFocus(false);
+    newEventFrame.eventNameEdit:SetMaxBytes(255)
+    newEventFrame.eventNameEdit:SetAutoFocus(false)
     newEventFrame.eventNameEdit:SetSize(200, 25)
     -- Label
-    newEventFrame.eventNameLabel = newEventFrame.eventNameLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.eventNameLabel =
+        newEventFrame.eventNameLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newEventFrame.eventNameLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -82)
     newEventFrame.eventNameLabel:SetText("Titre")
 
+    -- Date dropdown menu
+    -- Day Dropdown
+    local dayDropdown =
+        newEventFrame.dayDropdown or
+        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    dayDropdown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 0, -125)
+    UIDropDownMenu_SetWidth(dayDropdown, 40)
+    UIDropDownMenu_SetText(dayDropdown, chosenDay)
+    UIDropDownMenu_Initialize(
+        dayDropdown,
+        function(self, level, multilist)
+            local info = UIDropDownMenu_CreateInfo()
+            info.func = self.SetValue
+            for i = 1, getDaysInMonth(chosenMonth), 1 do
+                info.text = i
+                info.checked = i == chosenDay
+                info.arg1 = i
+                UIDropDownMenu_AddButton(info, 1)
+            end
+        end
+    )
+    function dayDropdown:SetValue(newDay)
+        chosenDay = newDay
+        UIDropDownMenu_SetText(dayDropdown, newDay)
+        CloseDropDownMenus()
+    end
+    newEventFrame.dayDropdown = dayDropdown
+    -- Month dropdown
+    local monthDropDown =
+        newEventFrame.monthDropDown or
+        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    monthDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 60, -125)
+    UIDropDownMenu_SetWidth(monthDropDown, 90)
+    UIDropDownMenu_SetText(monthDropDown, monthsStrings[chosenMonth])
+    UIDropDownMenu_Initialize(
+        monthDropDown,
+        function(self, level, multilist)
+            local info = UIDropDownMenu_CreateInfo()
+            info.func = self.SetValue
+            for i, v in ipairs(monthsStrings) do
+                info.text = v
+                info.checked = i == chosenMonth
+                info.arg1 = v
+                info.arg2 = i
+                UIDropDownMenu_AddButton(info, 1)
+            end
+        end
+    )
+    function monthDropDown:SetValue(newMonth, index)
+        if (getDaysInMonth(index) < getDaysInMonth(chosenMonth) and chosenDay > getDaysInMonth(index)) then
+            UIDropDownMenu_SetText(newEventFrame.dayDropdown, 1)
+            chosenDay = 1
+        end
+        chosenMonth = index
+        UIDropDownMenu_SetText(monthDropDown, newMonth)
+        CloseDropDownMenus()
+    end
+    newEventFrame.monthDropDown = monthDropDown
+    -- year label
+    local yearLabel = newEventFrame.yearLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    yearLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 200, -132)
+    yearLabel:SetText(currentYear)
+    newEventFrame.yearLabel = yearLabel
+
+    -- Time dropDowns
+    -- Hour dropdown
+    local minutesDropDown =
+        newEventFrame.minutesDropDown or
+        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    minutesDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 127, -165)
+    UIDropDownMenu_SetWidth(minutesDropDown, 40)
+    UIDropDownMenu_SetText(minutesDropDown, chosenMinutes)
+    UIDropDownMenu_Initialize(
+        minutesDropDown,
+        function(self, level, multilist)
+            local info = UIDropDownMenu_CreateInfo()
+            info.func = self.SetValue
+            for i = 0, 59, 5 do
+                info.text = i
+                info.checked = i == chosenMinutes
+                info.arg1 = i
+                UIDropDownMenu_AddButton(info, 1)
+            end
+        end
+    )
+    function minutesDropDown:SetValue(newMinutes)
+        chosenMinutes = newMinutes
+        UIDropDownMenu_SetText(minutesDropDown, newMinutes)
+        CloseDropDownMenus()
+    end
+    -- H label
+    newEventFrame.hourDropDown = hourDropDown
+    newEventFrame.hLabel = newEventFrame.hLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.hLabel:SetText("h")
+    newEventFrame.hLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 130, -172)
+    -- Minutes dropdown
+    local hourDropDown =
+        newEventFrame.hourDropDown or
+        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    hourDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 50, -165)
+    UIDropDownMenu_SetWidth(hourDropDown, 40)
+    UIDropDownMenu_SetText(hourDropDown, chosenHour)
+    UIDropDownMenu_Initialize(
+        hourDropDown,
+        function(self, level, multilist)
+            local info = UIDropDownMenu_CreateInfo()
+            info.func = self.SetValue
+            for i = 0, 23, 1 do
+                info.text = i
+                info.checked = i == chosenHour
+                info.arg1 = i
+                UIDropDownMenu_AddButton(info, 1)
+            end
+        end
+    )
+    function hourDropDown:SetValue(newHour)
+        chosenHour = newHour
+        UIDropDownMenu_SetText(hourDropDown, newHour)
+        CloseDropDownMenus()
+    end
+
     -- Event description
     -- Edit
-    newEventFrame.eventDescriptionEdit = newEventFrame.eventDescriptionEdit or CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame, "UIPanelScrollFrameTemplate");
-    newEventFrame.eventDescriptionEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -20, -120)
-    newEventFrame.eventDescriptionEdit:SetAutoFocus(false);
-    newEventFrame.eventDescriptionEdit:SetMaxBytes(1024);
-    newEventFrame.eventDescriptionEdit:SetSize(200, 100);
-  
+    newEventFrame.eventDescriptionEdit =
+        newEventFrame.eventDescriptionEdit or CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame)
+    newEventFrame.eventDescriptionEdit:SetBackdrop(
+        {
+            bgFile = [[Interface\Buttons\WHITE8x8]],
+            edgeFile = [[Interface\Tooltips\UI-Tooltip-Border]],
+            edgeSize = 14,
+            insets = {left = 3, right = 3, top = 3, bottom = 3}
+        }
+    )
+    newEventFrame.eventDescriptionEdit:SetBackdropColor(0, 0, 0)
+    newEventFrame.eventDescriptionEdit:SetBackdropBorderColor(0.4, 0.4, 0.4)
+    newEventFrame.eventDescriptionEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -17, -230)
+    newEventFrame.eventDescriptionEdit:SetAutoFocus(false)
+    newEventFrame.eventDescriptionEdit:SetMultiLine(true)
+    newEventFrame.eventDescriptionEdit:SetMaxBytes(1024)
+    newEventFrame.eventDescriptionEdit:SetText("\n\n\n\n")
+    newEventFrame.eventDescriptionEdit:SetJustifyH("LEFT")
+    newEventFrame.eventDescriptionEdit:SetJustifyV("CENTER")
+    newEventFrame.eventDescriptionEdit:SetSize(265, 200)
+    newEventFrame.eventDescriptionEdit:SetCursorPosition(0)
+    newEventFrame.eventDescriptionEdit:SetFont("Fonts\\FRIZQT__.TTF", 10)
     -- Label
-    newEventFrame.eventDescriptionLabel = newEventFrame.eventDescriptionLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    newEventFrame.eventDescriptionLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -110)
+    newEventFrame.eventDescriptionLabel =
+        newEventFrame.eventDescriptionLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.eventDescriptionLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -210)
     newEventFrame.eventDescriptionLabel:SetText("Description")
-
- 
-
 
     -- Showing and setting to mainContainer
     newEventFrame:Show()
@@ -186,11 +328,12 @@ function showNewEventFrame()
 end
 
 function showEventsForDay(day)
+    lastDayClicked = day
     if mainContainer.eventDetailsFrame then
         mainContainer.eventDetailsFrame:Hide()
     end
     if mainContainer.newEventFrame then
-        mainContainer.newEventFrame:Hide()
+    --mainContainer.newEventFrame:Hide()
     end
     if (mainContainer.eventsForDayFrame == nil) then
         mainContainer.eventsForDayFrame =
