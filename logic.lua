@@ -155,9 +155,18 @@ function ScepCalendar:OnReceiveHello(data, sender)
     end
 end
 
+function ScepCalendar:OnRequestDB(sender)
+    local rqData = {
+        rqType = RequestType.REQUEST,
+        request = Requests.DB_EXPORT,
+        db = self.db.profiles.events,
+        version = self.db.profiles.version
+    }
+end
+
 ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
 
---------- EVENT METHODS ------------
+--------- EVENT METHODS -----------
 local dummyEvent = {
     id = NS.utils.generateEventId(),
     title = "title",
