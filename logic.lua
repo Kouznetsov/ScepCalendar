@@ -205,7 +205,7 @@ local eventsFakeDb = {
     }, {
         id = "Fakeid3", 
         title = "RAID ONY + MC CE SOIR BOUGEZ VOUS",
-        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
+        description = " de dieu de bordel de merde",
         author = "Kurt",
         day = 31,
         month = 10,

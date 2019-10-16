@@ -142,9 +142,25 @@ function showEventsDetailsFrame(event)
     if (mainContainer.newEventFrame) then mainContainer.newEventFrame:Hide() end;
     eventDetailsFrame:SetSize(300, 550)
     eventDetailsFrame:SetPoint("RIGHT", mainContainer, "RIGHT", 300, 0)
+    -- Title
+    eventDetailsFrame.title = eventDetailsFrame.title or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    eventDetailsFrame.title:SetText(event.title)
+    eventDetailsFrame.title:SetSize(280, 50)
+    eventDetailsFrame.title:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -30 )
+
+    -- Hour and minutes
+    eventDetailsFrame.dateTime = eventDetailsFrame.dateTime  or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    eventDetailsFrame.dateTime:SetText(event.hour .. " h " .. event.minutes)
+    eventDetailsFrame.dateTime:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -80)
+
+    -- Description
+    eventDetailsFrame.description = eventDetailsFrame.description or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    eventDetailsFrame.description:SetText(event.description)
+    eventDetailsFrame.description:SetSize(280, 100)
+    eventDetailsFrame.description:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -90)
+
     eventDetailsFrame:Show()
     mainContainer.eventDetailsFrame = eventDetailsFrame;
-
 end
 
 function showNewEventFrame()
@@ -279,8 +295,9 @@ function showNewEventFrame()
         UIDropDownMenu_SetText(minutesDropDown, newMinutes)
         CloseDropDownMenus()
     end
+    newEventFrame.minutesDropDown = minutesDropDown
+
     -- H label
-    newEventFrame.hourDropDown = hourDropDown
     newEventFrame.hLabel = newEventFrame.hLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newEventFrame.hLabel:SetText("h")
     newEventFrame.hLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 80, -172)
@@ -309,6 +326,7 @@ function showNewEventFrame()
         UIDropDownMenu_SetText(hourDropDown, newHour)
         CloseDropDownMenus()
     end
+    newEventFrame.hourDropDown = hourDropDown
 
     -- Event description
     -- Edit
@@ -478,9 +496,9 @@ function generateDayFrames()
                 dayFrame.redDot:SetText("")
             end
             dayFrame.redDot2 = dayFrame.redDot2 or dayFrame:CreateFontString(nil, "OVERLAY", "GameFontRedSmall")
-            dayFrame.redDot2:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 11, -8)
+            dayFrame.redDot2:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 10, -10)
             if (today.day == dayNumber and today.month == currentMonth and today.year == currentYear) then
-                dayFrame.redDot2:SetText("x")
+                dayFrame.redDot2:SetText("X")
             else
                 dayFrame.redDot2:SetText("")
             end
