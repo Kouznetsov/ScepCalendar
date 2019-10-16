@@ -137,30 +137,65 @@ for k, v in next, weekdayStrings do
 end
 
 function showEventsDetailsFrame(event)
-    local eventDetailsFrame = mainContainer.eventDetailsFrame or CreateFrame("Frame", "EventDetailsFrame", mainContainer, "BasicFrameTemplateWithInset");
+    local eventDetailsFrame =
+        mainContainer.eventDetailsFrame or
+        CreateFrame("Frame", "EventDetailsFrame", mainContainer, "BasicFrameTemplateWithInset")
 
-    if (mainContainer.newEventFrame) then mainContainer.newEventFrame:Hide() end;
+    if (mainContainer.newEventFrame) then
+        mainContainer.newEventFrame:Hide()
+    end
     eventDetailsFrame:SetSize(300, 550)
     eventDetailsFrame:SetPoint("RIGHT", mainContainer, "RIGHT", 300, 0)
     -- Title
-    eventDetailsFrame.title = eventDetailsFrame.title or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    eventDetailsFrame.title =
+        eventDetailsFrame.title or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     eventDetailsFrame.title:SetText(event.title)
     eventDetailsFrame.title:SetSize(280, 50)
-    eventDetailsFrame.title:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -30 )
+    eventDetailsFrame.title:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -30)
 
     -- Hour and minutes
-    eventDetailsFrame.dateTime = eventDetailsFrame.dateTime  or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    eventDetailsFrame.dateTime =
+        eventDetailsFrame.dateTime or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     eventDetailsFrame.dateTime:SetText(event.hour .. " h " .. event.minutes)
     eventDetailsFrame.dateTime:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -80)
 
     -- Description
-    eventDetailsFrame.description = eventDetailsFrame.description or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    eventDetailsFrame.description =
+        eventDetailsFrame.description or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     eventDetailsFrame.description:SetText(event.description)
     eventDetailsFrame.description:SetSize(280, 100)
     eventDetailsFrame.description:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -90)
 
+    -- Signed up Label
+    eventDetailsFrame.signedUpLabel =
+        eventDetailsFrame.signedUpLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
+    eventDetailsFrame.signedUpLabel:SetText("Vous êtes inscrit pour cet event")
+    eventDetailsFrame.signedUpLabel:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -200)
+
+    -- Sign up button
+    eventDetailsFrame.signUpOrOutBtn =
+        eventDetailsFrame.signUpOrOutBtn or
+        CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIButtonPanelTemplate")
+    eventDetailsFrame.signUpOrOutBtn:SetSize(140, 20)
+    local suooTxt = "S'inscrire"
+    for i = 1, #event.roster, 1 do
+        if event.roster[i].name == NS.config.playerName then
+            suooTxt = "Se désinscrire"
+        end
+    end
+    eventDetailsFrame.signUpOrOutBtn:SetText(suooTxt)
+    eventDetailsFrame.signUpOrOutBtn:SetScript(
+        "OnClick",
+        function()
+            -- s'inscrire a l'event
+        end
+    )
+    
+    -- Roster
+    
+
     eventDetailsFrame:Show()
-    mainContainer.eventDetailsFrame = eventDetailsFrame;
+    mainContainer.eventDetailsFrame = eventDetailsFrame
 end
 
 function showNewEventFrame()
@@ -355,25 +390,28 @@ function showNewEventFrame()
     createEventBtn:SetPoint("BOTTOM", newEventFrame, "BOTTOM", 0, 18)
     createEventBtn:SetSize(100, 25)
     createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
-    createEventBtn:SetScript("OnClick", function()
-        local event = {
-            id = NS.utils.generateEventId(),
-            title = newEventFrame.eventNameEdit:GetText(),
-            description = newEventFrame.eventDescriptionEdit:GetText(),
-            author = NS.config.characterName,
-            day = chosenDay,
-            month = chosenMonth,
-            year = yearLabel:GetText(),
-            hour = chosenHour,
-            minutes = chosenMinutes,
-            roster = {}
-        }
-        newEventFrame.eventDescriptionEdit:SetText("")
-        newEventFrame.eventNameEdit:SetText("")
-        -- create event in db and share thru network
-        mainContainer.eventsForDayFrame:Hide();
-        showEventsDetailsFrame(event);
-    end)
+    createEventBtn:SetScript(
+        "OnClick",
+        function()
+            local event = {
+                id = NS.utils.generateEventId(),
+                title = newEventFrame.eventNameEdit:GetText(),
+                description = newEventFrame.eventDescriptionEdit:GetText(),
+                author = NS.config.characterName,
+                day = chosenDay,
+                month = chosenMonth,
+                year = yearLabel:GetText(),
+                hour = chosenHour,
+                minutes = chosenMinutes,
+                roster = {}
+            }
+            newEventFrame.eventDescriptionEdit:SetText("")
+            newEventFrame.eventNameEdit:SetText("")
+            -- create event in db and share thru network
+            mainContainer.eventsForDayFrame:Hide()
+            showEventsDetailsFrame(event)
+        end
+    )
     newEventFrame.createEventBtn = createEventBtn
     -- Showing and setting to mainContainer
     newEventFrame:Show()
@@ -504,7 +542,7 @@ function generateDayFrames()
             end
             if (eventsThisDay) then
                 dayFrame.greenNumber = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontGreenLarge")
-                dayFrame.number = dayFrame.greenNumber;
+                dayFrame.number = dayFrame.greenNumber
             else
                 dayFrame.greyNumber = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableLarge")
                 dayFrame.number = dayFrame.greyNumber
