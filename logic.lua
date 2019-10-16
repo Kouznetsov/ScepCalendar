@@ -63,13 +63,12 @@ function ScepCalendar:OnDisable()
 end
 
 function ScepCalendar:OnCommCallback(message, channel, sender)
-    if (sender ~= NS.config.characterName) then
+     if (sender ~= NS.config.characterName) then
         local success, data = ScepCalendar:Deserialize(message)
 
         if (not success) then
             print("Could not deserialize " .. message .. " from " .. sender)
         elseif (data.request == Requests.HELLO) then
-            print("received hello from " .. sender)
             ScepCalendar:OnReceiveHello(data, sender)
         else
             print(
@@ -94,40 +93,69 @@ end
 -- Hello: sends hello with the version of the addon
 function ScepCalendar:RequestHello()
     local rqData = {
-        type = RequestType.REQUEST,
+        rqType = RequestType.REQUEST,
         request = Requests.HELLO,
-        addonVersion = NS.config.addonVersion,
-        dbVersion = self.db.profiles.dbVersion
     }
+    print("requesting HELLO")
     self:Send(rqData)
 end
 
 local receivedVersions = {}
 local helloBatchRunning = false
+local newAddonVersionAvailable = false
+ScepCalendar.newAddonVersionShown = false
+
+local tm = 0;
 
 -- Responds to the sender with its own data and version if it's superior
 function ScepCalendar:OnReceiveHello(data, sender)
-    receivedVersions[#receivedVersions + 1] = {
-        {version = data.dbVersion, sender = NS.characterName}
-    }
+    if (data.rqType == RequestType.REQUEST) then
+        print("Received a HELLO request")
+        local rqData = {
+            rqType = RequestType.RESPONSE,
+            request = Requests.HELLO,
+            addonVersion = NS.config.addonVersion,
+            dbVersion = self.db.profiles.dbVersion
+        }
+        print("Sending own version as response to " .. sender)
+        self:Send(rqData, sender);
+    elseif data.rqType == RequestType.RESPONSE then
+        print("Received a HELLO response")
+        receivedVersions[#receivedVersions + 1] = {
+            version = data.dbVersion,
+            sender = sender,
+            addonVersion = data.addonVersion
+        }
 
-    print("received version " .. receivedVersions[1])
-    local afterWait = function()
-        local highestVersion = self.db.profiles.dbVersion
-        for i = 1, #receivedVersions, 1 do
-            print(receivedVersions[i])
-            if (receivedVersions[i] > highestVersion) then
-                highestVersion = receivedVersions[i]
+        print("received version " .. data.dbVersion .. " from " .. sender)
+        local afterWait = function()
+            local highestVersion = {version = self.db.profiles.dbVersion, sender = NS.config.characterName}
+
+            for i = 1, #receivedVersions, 1 do
+                if (receivedVersions[i].version > highestVersion.version) then
+                    highestVersion = receivedVersions[i]
+                end
+                if (receivedVersions[i].addonVersion > NS.config.addonVersion) then
+                    newAddonVersionAvailable = true
+                end
             end
+            receivedVersions = {}
+            print("Highest version received =  " .. highestVersion.version .. " from " .. highestVersion.sender)
+            if (newAddonVersionAvailable == true and ScepCalendar.newAddonVersionShown == false) then
+                ScepCalendar:Print("Une nouvelle version de l'addon est dispo sur discord. Chope la vite fait.")
+                ScepCalendar.newAddonVersionShown = true
+            end
+            if (highestVersion.sender ~= NS.config.characterName) then
+            -- If i don't have the highest DB version
+            end
+            helloBatchRunning = false
         end
-        receivedVersions = {};
-        print("Highest version received =  " .. highestVersion)
-        helloBatchRunning = false
+        if (not helloBatchRunning) then
+            helloBatchRunning = true
+            ScepCalendar_wait(5, afterWait)
+        end
     end
-    if (not helloBatchRunning) then
-        helloBatchRunning = true
-        ScepCalendar_wait(10, afterWait)
-    end
+
     --[[
     if (data.dbVersion < self.db.profiles.dbVersion) then
         local rqData = {
