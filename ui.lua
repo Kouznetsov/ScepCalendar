@@ -339,9 +339,6 @@ function showEventsForDay(day)
     if mainContainer.eventDetailsFrame then
         mainContainer.eventDetailsFrame:Hide()
     end
-    if mainContainer.newEventFrame then
-    --mainContainer.newEventFrame:Hide()
-    end
     if (mainContainer.eventsForDayFrame == nil) then
         mainContainer.eventsForDayFrame =
             CreateFrame("Frame", "EventsForDay", mainContainer, "BasicFrameTemplateWithInset")
@@ -372,6 +369,40 @@ function showEventsForDay(day)
             15
         )
     end
+    local eventsForDay = NS.ScepCalendar:GetEventsForDay(day, currentMonth, currentYear);
+    local eventsFrames = mainContainer.eventsForDayFrame.eventsFrames or {}
+    -- Hide any event previously shown
+    for i = 1, #eventsFrames do
+        eventsFrames[i]:Hide();
+    end
+    -- fill the eventFrames list with eventsForDay
+    for i = 1, #eventsForDay, 1 do
+        local currentEvent = eventsForDay[i]
+        local eventFrame = eventsFrames[i] or CreateFrame("Frame", "ScepCalendarEventFrame", mainContainer.eventsForDayFrame, "InsetFrameTemplate3")
+        eventFrame:SetSize(180, 60);
+        eventFrame:SetPoint("TOPLEFT", mainContainer.eventsForDayFrame, "TOPLEFT", 10, ((i - 1) * -60) - 50 - (i * 5));
+        -- Event Title
+        eventFrame.title = eventFrame.title or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
+        eventFrame.title:SetText(eventsForDay[i].title)
+        eventFrame.title:SetSize(170, 10)
+        eventFrame.title:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -5)
+        -- Amount of people in the roster
+        eventFrame.rosterSize = eventFrame.rosterSize or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        local rosterSizePresent = 0;
+        for i = 1, #currentEvent.roster, 1 do
+            if currentEvent.roster[i].present then rosterSizePresent = rosterSizePresent + 1 end;
+        end
+        eventFrame.rosterSize:SetText(rosterSizePresent .. " participants")
+        eventFrame.rosterSize:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -25)
+        -- Created by
+        eventFrame.author = eventFrame.author or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        eventFrame.author:SetText("Créé par " .. currentEvent.author)
+        eventFrame.author:SetPoint("BOTTOMRIGHT", eventFrame, "BOTTOMRIGHT", -8, 5)
+
+        eventFrame:Show();
+        eventsFrames[i] = eventFrame;
+    end
+    mainContainer.eventsForDayFrame.eventsFrames = eventsFrames;
 end
 
 -- Days frames

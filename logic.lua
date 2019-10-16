@@ -63,7 +63,7 @@ function ScepCalendar:OnDisable()
 end
 
 function ScepCalendar:OnCommCallback(message, channel, sender)
-     if (sender ~= NS.config.characterName) then
+    if (sender ~= NS.config.characterName) then
         local success, data = ScepCalendar:Deserialize(message)
 
         if (not success) then
@@ -94,7 +94,7 @@ end
 function ScepCalendar:RequestHello()
     local rqData = {
         rqType = RequestType.REQUEST,
-        request = Requests.HELLO,
+        request = Requests.HELLO
     }
     print("requesting HELLO")
     self:Send(rqData)
@@ -116,7 +116,7 @@ function ScepCalendar:OnReceiveHello(data, sender)
             dbVersion = self.db.profiles.dbVersion
         }
         print("Sending own version as response to " .. sender)
-        self:Send(rqData, sender);
+        self:Send(rqData, sender)
     elseif data.rqType == RequestType.RESPONSE then
         print("Received a HELLO response")
         receivedVersions[#receivedVersions + 1] = {
@@ -143,8 +143,8 @@ function ScepCalendar:OnReceiveHello(data, sender)
                 ScepCalendar.newAddonVersionShown = true
             end
             if (highestVersion.sender ~= NS.config.characterName) then
-                -- If i don't have the highest DB version
-                -- TODO Envoyer une demande de db export à highestVersion.sender
+            -- If i don't have the highest DB version
+            -- TODO Envoyer une demande de db export à highestVersion.sender
             end
             helloBatchRunning = false
         end
@@ -167,18 +167,66 @@ end
 ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
 
 --------- EVENT METHODS -----------
-local dummyEvent = {
-    id = NS.utils.generateEventId(),
-    title = "title",
-    description = "description",
-    author = "ta mere",
-    day = 12,
-    month = 12,
-    year = 2019,
-    hour = 20,
-    minutes = 45,
-    roster = {}
+local eventsFakeDb = {
+    {
+        id = "Fakeid1",
+        title = "Halloween",
+        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
+        author = "Bordel",
+        day = 31,
+        month = 10,
+        year = 2019,
+        hour = 20,
+        minutes = 45,
+        roster = {}
+    },
+    {
+        id = "Fakeid2", 
+        title = "Halloween2",
+        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
+        author = "Sildarion",
+        day = 31,
+        month = 10,
+        year = 2019,
+        hour = 20,
+        minutes = 45,
+        roster = {}
+    }, {
+        id = "Fakeid3", 
+        title = "Halloween3",
+        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
+        author = "Lïena",
+        day = 31,
+        month = 10,
+        year = 2019,
+        hour = 20,
+        minutes = 45,
+        roster = {}
+    }, {
+        id = "Fakeid3", 
+        title = "RAID ONY + MC CE SOIR BOUGEZ VOUS",
+        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
+        author = "Kurt",
+        day = 31,
+        month = 10,
+        year = 2019,
+        hour = 20,
+        minutes = 45,
+        roster = {}
+    }
 }
 
 function ScepCalendar:CreateNewEvent(eventData)
 end
+
+function ScepCalendar:GetEventsForMonth(month, year)
+end
+
+function ScepCalendar:GetEventsForDay(day, month, year)
+    if (day == 31 and month == 10 and year == 2019) then
+        return eventsFakeDb
+    end
+    return {}
+end
+
+NS.ScepCalendar = ScepCalendar;
