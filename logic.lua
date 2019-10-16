@@ -105,8 +105,6 @@ local helloBatchRunning = false
 local newAddonVersionAvailable = false
 ScepCalendar.newAddonVersionShown = false
 
-local tm = 0;
-
 -- Responds to the sender with its own data and version if it's superior
 function ScepCalendar:OnReceiveHello(data, sender)
     if (data.rqType == RequestType.REQUEST) then
@@ -126,7 +124,6 @@ function ScepCalendar:OnReceiveHello(data, sender)
             sender = sender,
             addonVersion = data.addonVersion
         }
-
         print("received version " .. data.dbVersion .. " from " .. sender)
         local afterWait = function()
             local highestVersion = {version = self.db.profiles.dbVersion, sender = NS.config.characterName}
@@ -146,7 +143,8 @@ function ScepCalendar:OnReceiveHello(data, sender)
                 ScepCalendar.newAddonVersionShown = true
             end
             if (highestVersion.sender ~= NS.config.characterName) then
-            -- If i don't have the highest DB version
+                -- If i don't have the highest DB version
+                -- TODO Envoyer une demande de db export à highestVersion.sender
             end
             helloBatchRunning = false
         end
@@ -155,24 +153,6 @@ function ScepCalendar:OnReceiveHello(data, sender)
             ScepCalendar_wait(5, afterWait)
         end
     end
-
-    --[[
-    if (data.dbVersion < self.db.profiles.dbVersion) then
-        local rqData = {
-            type = RequestType.RESPONSE,
-            request = Requests.HELLO,
-            addonVersion = NS.config.addonVersion,
-            dbVersion = self.db.profiles.dbVersion
-        }
-        print("sending hello to " .. sender)
-        self:Send(rqData)
-    elseif (data.dbVersion > self.db.profiles.dbVersion) then
-        -- Received version is superior, need update
-    end
-    if (data.addonVersion > NS.config.addonVersion) then
-        message("Une nouvelle version de l'addon est disponible. Télécharge la vite fait stp.")
-    end
-    ]]
 end
 
 ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
