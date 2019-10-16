@@ -136,6 +136,17 @@ for k, v in next, weekdayStrings do
     )
 end
 
+function showEventsDetailsFrame(event)
+    local eventDetailsFrame = mainContainer.eventDetailsFrame or CreateFrame("Frame", "EventDetailsFrame", mainContainer, "BasicFrameTemplateWithInset");
+
+    if (mainContainer.newEventFrame) then mainContainer.newEventFrame:Hide() end;
+    eventDetailsFrame:SetSize(300, 550)
+    eventDetailsFrame:SetPoint("RIGHT", mainContainer, "RIGHT", 300, 0)
+    eventDetailsFrame:Show()
+    mainContainer.eventDetailsFrame = eventDetailsFrame;
+
+end
+
 function showNewEventFrame()
     local chosenMonth = currentMonth
     local chosenDay = lastDayClicked
@@ -326,9 +337,26 @@ function showNewEventFrame()
     createEventBtn:SetPoint("BOTTOM", newEventFrame, "BOTTOM", 0, 18)
     createEventBtn:SetSize(100, 25)
     createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
-
+    createEventBtn:SetScript("OnClick", function()
+        local event = {
+            id = NS.utils.generateEventId(),
+            title = newEventFrame.eventNameEdit:GetText(),
+            description = newEventFrame.eventDescriptionEdit:GetText(),
+            author = NS.config.characterName,
+            day = chosenDay,
+            month = chosenMonth,
+            year = yearLabel:GetText(),
+            hour = chosenHour,
+            minutes = chosenMinutes,
+            roster = {}
+        }
+        newEventFrame.eventDescriptionEdit:SetText("")
+        newEventFrame.eventNameEdit:SetText("")
+        -- create event in db and share thru network
+        mainContainer.eventsForDayFrame:Hide();
+        showEventsDetailsFrame(event);
+    end)
     newEventFrame.createEventBtn = createEventBtn
-
     -- Showing and setting to mainContainer
     newEventFrame:Show()
     mainContainer.newEventFrame = newEventFrame
@@ -403,7 +431,14 @@ function showEventsForDay(day)
         eventFrame.author = eventFrame.author or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         eventFrame.author:SetText("Créé par " .. currentEvent.author)
         eventFrame.author:SetPoint("BOTTOMRIGHT", eventFrame, "BOTTOMRIGHT", -8, 5)
-
+        eventFrame:SetScript(
+            "OnMouseDown",
+            function(self, button)
+                if (button == "LeftButton") then
+                    showEventsDetailsFrame(currentEvent)
+                end
+            end
+        )
         eventFrame:Show()
         eventsFrames[i] = eventFrame
     end
@@ -419,6 +454,7 @@ end
 function generateDayFrames()
     local dateTable = date("*t")
     local firstDayOfMonth = get_day_of_week(1, currentMonth, currentYear)
+    local today = date("*t")
     for i, v in next, dayFramesPool do
         v:Hide()
     end
@@ -434,6 +470,20 @@ function generateDayFrames()
             dayFrame:SetSize(97, 70)
             dayFrame:SetPoint("TOPLEFT", mainContainer.monthContainer, "TOPLEFT", xOffset, yOffset)
             dayFrame:Show()
+            dayFrame.redDot = dayFrame.redDot or dayFrame:CreateFontString(nil, "OVERLAY", "GameFontRedLarge")
+            dayFrame.redDot:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 7, -6)
+            if (today.day == dayNumber and today.month == currentMonth and today.year == currentYear) then
+                dayFrame.redDot:SetText("O")
+            else
+                dayFrame.redDot:SetText("")
+            end
+            dayFrame.redDot2 = dayFrame.redDot2 or dayFrame:CreateFontString(nil, "OVERLAY", "GameFontRedSmall")
+            dayFrame.redDot2:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 11, -8)
+            if (today.day == dayNumber and today.month == currentMonth and today.year == currentYear) then
+                dayFrame.redDot2:SetText("x")
+            else
+                dayFrame.redDot2:SetText("")
+            end
             if (eventsThisDay) then
                 dayFrame.greenNumber = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontGreenLarge")
                 dayFrame.number = dayFrame.greenNumber;
