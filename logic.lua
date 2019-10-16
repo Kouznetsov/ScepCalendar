@@ -213,7 +213,19 @@ local eventsFakeDb = {
         hour = 20,
         minutes = 45,
         roster = {}
-    }
+    },
+    {
+        id = "Fakeid5", 
+        title = "coucou",
+        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
+        author = "Sildarion",
+        day = 2,
+        month = 2,
+        year = 2020,
+        hour = 20,
+        minutes = 45,
+        roster = {}
+    },
 }
 
 function ScepCalendar:CreateNewEvent(eventData)

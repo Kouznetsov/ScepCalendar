@@ -369,28 +369,33 @@ function showEventsForDay(day)
             15
         )
     end
-    local eventsForDay = NS.ScepCalendar:GetEventsForDay(day, currentMonth, currentYear);
+    local eventsForDay = NS.ScepCalendar:GetEventsForDay(day, currentMonth, currentYear)
     local eventsFrames = mainContainer.eventsForDayFrame.eventsFrames or {}
     -- Hide any event previously shown
     for i = 1, #eventsFrames do
-        eventsFrames[i]:Hide();
+        eventsFrames[i]:Hide()
     end
     -- fill the eventFrames list with eventsForDay
     for i = 1, #eventsForDay, 1 do
         local currentEvent = eventsForDay[i]
-        local eventFrame = eventsFrames[i] or CreateFrame("Frame", "ScepCalendarEventFrame", mainContainer.eventsForDayFrame, "InsetFrameTemplate3")
-        eventFrame:SetSize(180, 60);
-        eventFrame:SetPoint("TOPLEFT", mainContainer.eventsForDayFrame, "TOPLEFT", 10, ((i - 1) * -60) - 50 - (i * 5));
+        local eventFrame =
+            eventsFrames[i] or
+            CreateFrame("Frame", "ScepCalendarEventFrame", mainContainer.eventsForDayFrame, "InsetFrameTemplate3")
+        eventFrame:SetSize(180, 60)
+        eventFrame:SetPoint("TOPLEFT", mainContainer.eventsForDayFrame, "TOPLEFT", 10, ((i - 1) * -60) - 50 - (i * 5))
         -- Event Title
         eventFrame.title = eventFrame.title or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
         eventFrame.title:SetText(eventsForDay[i].title)
         eventFrame.title:SetSize(170, 10)
         eventFrame.title:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -5)
         -- Amount of people in the roster
-        eventFrame.rosterSize = eventFrame.rosterSize or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        local rosterSizePresent = 0;
+        eventFrame.rosterSize =
+            eventFrame.rosterSize or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        local rosterSizePresent = 0
         for i = 1, #currentEvent.roster, 1 do
-            if currentEvent.roster[i].present then rosterSizePresent = rosterSizePresent + 1 end;
+            if currentEvent.roster[i].present then
+                rosterSizePresent = rosterSizePresent + 1
+            end
         end
         eventFrame.rosterSize:SetText(rosterSizePresent .. " participants")
         eventFrame.rosterSize:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -25)
@@ -399,10 +404,10 @@ function showEventsForDay(day)
         eventFrame.author:SetText("Créé par " .. currentEvent.author)
         eventFrame.author:SetPoint("BOTTOMRIGHT", eventFrame, "BOTTOMRIGHT", -8, 5)
 
-        eventFrame:Show();
-        eventsFrames[i] = eventFrame;
+        eventFrame:Show()
+        eventsFrames[i] = eventFrame
     end
-    mainContainer.eventsForDayFrame.eventsFrames = eventsFrames;
+    mainContainer.eventsForDayFrame.eventsFrames = eventsFrames
 end
 
 -- Days frames
@@ -424,12 +429,17 @@ function generateDayFrames()
             local dayFrame = dayFramesPool[dayNumber]
             local yOffset = math.floor(((i - 1) / 7)) * -70
             local xOffset = ((i - 1) % 7) * 97
+            local eventsThisDay = #(NS.ScepCalendar:GetEventsForDay(dayNumber, currentMonth, currentYear)) > 0
 
             dayFrame:SetSize(97, 70)
             dayFrame:SetPoint("TOPLEFT", mainContainer.monthContainer, "TOPLEFT", xOffset, yOffset)
             dayFrame:Show()
-            if (dayFrame.number == nil) then
-                dayFrame.number = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableLarge")
+            if (eventsThisDay) then
+                dayFrame.greenNumber = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontGreenLarge")
+                dayFrame.number = dayFrame.greenNumber;
+            else
+                dayFrame.greyNumber = dayFrame:CreateFontString(nil, "OVERLAY", "GameFontDisableLarge")
+                dayFrame.number = dayFrame.greyNumber
             end
             dayFrame.number:SetText(dayNumber)
             dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER")
