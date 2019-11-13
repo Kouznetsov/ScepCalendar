@@ -439,6 +439,7 @@ function showNewEventFrame()
             newEventFrame.eventNameEdit:SetText("")
             -- create event in db and share thru network
             NS.ScepCalendar.CreateNewEvent(NS.ScepCalendar, event)
+            generateDayFrames();
             UI.mainContainer.eventsForDayFrame:Hide()
             showEventsDetailsFrame(event)
         end

@@ -158,6 +158,7 @@ function ScepCalendar:OnReceiveHello(data, sender)
             if (highestVersion.sender ~= NS.config.characterName) then
             -- If i don't have the highest DB version
             -- TODO Envoyer une demande de db export à highestVersion.sender
+            ScepCalendar:RequestExportDB(highestVersion.sender)
             end
             helloBatchRunning = false
         end
@@ -204,122 +205,23 @@ end
 ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
 
 --------- EVENT METHODS -----------
-local eventsFakeDb = {
-    {
-        id = "Fakeid1",
-        title = "Halloween",
-        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
-        author = "Bordel",
-        day = 31,
-        month = 10,
-        year = 2019,
-        hour = 20,
-        minutes = 45,
-    },
-    {
-        id = "Fakeid2", 
-        title = "Halloween2",
-        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
-        author = "Sildarion",
-        day = 31,
-        month = 10,
-        year = 2019,
-        hour = 20,
-        minutes = 45,
-    }, {
-        id = "Fakeid3", 
-        title = "Halloween3",
-        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
-        author = "Lïena",
-        day = 31,
-        month = 10,
-        year = 2019,
-        hour = 20,
-        minutes = 45,
-    }, {
-        id = "Fakeid3", 
-        title = "RAID ONY + MC CE SOIR BOUGEZ VOUS",
-        description = " de dieu de bordel de merde",
-        author = "Kurt",
-        day = 31,
-        month = 10,
-        year = 2019,
-        hour = 20,
-        minutes = 45,
-    },
-    {
-        id = "Fakeid5", 
-        title = "coucou",
-        description = "Une certaine description de merde bien longue à afficher juste pour casser les couilles putainde nom de dieu de bordel de merde",
-        author = "Sildarion",
-        day = 2,
-        month = 2,
-        year = 2020,
-        hour = 20,
-        minutes = 45,
-    },
-}
-
-function DeepPrint (e)
-    -- if e is a table, we should iterate over its elements
-    if type(e) == "table" then
-        for k,v in pairs(e) do -- for every element in the table
-            print(k)
-            DeepPrint(v)       -- recursively repeat the same procedure
-        end
-    else -- if not, we can just print it
-        print(e)
-    end
-end
 
 function ScepCalendar:CreateNewEvent(eventData)
     ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
-
-    --ScepCalendar.db.profiles.events[#ScepCalendar.db.profiles.events + 1] = eventData
     ScepCalendar.db.profiles.events[eventData.year] = ScepCalendar.db.profiles.events[eventData.year] or {}
     ScepCalendar.db.profiles.events[eventData.year][eventData.month] = ScepCalendar.db.profiles.events[eventData.year][eventData.month] or {}
     ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] or {}
     local r = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day];
     ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][#r + 1] = eventData
-    
-
-    --print("Creating event with title from db = " .. ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][1].title)
-    print("creating event for date " .. eventData.day .. "/" .. eventData.month .. "/" .. eventData.year)
-    print("testing: " .. ScepCalendar.db.profiles.events["2019"][11][30][1].title)
     ScepCalendar.db.profiles.dbVersion = ScepCalendar.db.profiles.dbVersion + 1
-    print("Create event")
     ScepCalendar:ExportDB();
 end
 
 
 function ScepCalendar:GetEventsForDay(day, month, year)
-    --print(day .. "/" .. month .. "/" .. year)
-    
-    --DeepPrint(ScepCalendar.db.profiles.events)
-    
-   --[[] if (ScepCalendar.db.profiles.events[year]) then
-        print("there are events this year" .. year)
-        if (ScepCalendar.db.profiles.events[year][month]) then
-            print("there are events this month" .. month)
-            if ScepCalendar.db.profiles.events[year][month][day] then
-                print("there are events this day" .. day)
-            else 
-                print("No events this day" .. day)
-            end
-        else
-            print("No events this month" .. month)
-        end
-    else
-        print("No events this year" .. year)
-    end
-]]
-
-
     if ScepCalendar.db.profiles.events[tostring(year)] and ScepCalendar.db.profiles.events[tostring(year)][month] and ScepCalendar.db.profiles.events[tostring(year)][month][day] then
-        --print("YES")
         return ScepCalendar.db.profiles.events[tostring(year)][month][day]
     else
-        --print("NO")
         return {}
     end
 end
