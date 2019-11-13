@@ -9,7 +9,8 @@ local Requests = {
 }
 local RequestType = {
     REQUEST = "request",
-    RESPONSE = "response"
+    RESPONSE = "response",
+    BROADCAST = "broadcast"
 }
 
 local waitTable = {}
@@ -70,11 +71,14 @@ function ScepCalendar:OnCommCallback(message, channel, sender)
             print("Could not deserialize " .. message .. " from " .. sender)
         elseif (data.request == Requests.HELLO) then
             ScepCalendar:OnReceiveHello(data, sender)
+        elseif (data.request == Requests.DB_EXPORT) then
+            ScepCalendar:OnReceiveDbExport(data)
         else
             print(
                 "UNKNOWN COMM RECEIVED: channel: " ..
                     channel .. " message: '" .. message .. "'" .. " sender: " .. sender
             )
+            print("request = " .. data.request)
         end
     end
 end
@@ -94,7 +98,8 @@ end
 function ScepCalendar:RequestHello()
     local rqData = {
         rqType = RequestType.REQUEST,
-        request = Requests.HELLO
+        request = Requests.HELLO,
+        version = self.db.profiles.dbVersion
     }
     print("requesting HELLO")
     self:Send(rqData)
@@ -113,18 +118,23 @@ function ScepCalendar:OnReceiveHello(data, sender)
             rqType = RequestType.RESPONSE,
             request = Requests.HELLO,
             addonVersion = NS.config.addonVersion,
-            dbVersion = self.db.profiles.dbVersion
+            version = self.db.profiles.dbVersion
         }
-        print("Sending own version as response to " .. sender)
-        self:Send(rqData, sender)
+        if (data.version > self.db.profiles.dbVersion) then 
+            print("Received DB version > to ours, asking for his DB")
+            ScepCalendar:RequestExportDB(sender)
+        else 
+            print("Sending own version as response to " .. sender)
+            self:Send(rqData, sender)
+        end
     elseif data.rqType == RequestType.RESPONSE then
         print("Received a HELLO response")
         receivedVersions[#receivedVersions + 1] = {
-            version = data.dbVersion,
+            version = data.version,
             sender = sender,
             addonVersion = data.addonVersion
         }
-        print("received version " .. data.dbVersion .. " from " .. sender)
+        print("received version " .. data.version .. " from " .. sender)
         local afterWait = function()
             local highestVersion = {version = self.db.profiles.dbVersion, sender = NS.config.characterName}
 
@@ -155,13 +165,37 @@ function ScepCalendar:OnReceiveHello(data, sender)
     end
 end
 
-function ScepCalendar:OnRequestDB(sender)
+function ScepCalendar:OnReceiveDbExport(data, sender) 
+    if (data.rqType == RequestType.REQUEST) then
+        print("Receive DB Export request")
+        ScepCalendar:ExportDB(sender)
+    elseif data.rqType == RequestType.RESPONSE then
+        print("Receive DB Export response")
+        if data.version > self.db.profiles.dbVersion then
+            print("version superior to ours, taking received DB")
+            self.db.profiles.events = data.db
+            self.db.profiles.dbVersion = data.version
+        end
+    end
+end
+
+function ScepCalendar:RequestExportDB(sender)
     local rqData = {
         rqType = RequestType.REQUEST,
         request = Requests.DB_EXPORT,
-        db = self.db.profiles.events,
-        version = self.db.profiles.version
     }
+    ScepCalendar:Send(rqData, sender)
+end
+
+function ScepCalendar:ExportDB(sender)
+    local rqData = {
+        rqType = RequestType.RESPONSE,
+        request = Requests.DB_EXPORT,
+        db = self.db.profiles.events,
+        version = self.db.profiles.dbVersion
+    }
+    print("sending our own DB")
+    ScepCalendar:Send(rqData, sender);    
 end
 
 ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
@@ -178,7 +212,6 @@ local eventsFakeDb = {
         year = 2019,
         hour = 20,
         minutes = 45,
-        roster = {}
     },
     {
         id = "Fakeid2", 
@@ -190,7 +223,6 @@ local eventsFakeDb = {
         year = 2019,
         hour = 20,
         minutes = 45,
-        roster = {}
     }, {
         id = "Fakeid3", 
         title = "Halloween3",
@@ -201,7 +233,6 @@ local eventsFakeDb = {
         year = 2019,
         hour = 20,
         minutes = 45,
-        roster = {}
     }, {
         id = "Fakeid3", 
         title = "RAID ONY + MC CE SOIR BOUGEZ VOUS",
@@ -212,7 +243,6 @@ local eventsFakeDb = {
         year = 2019,
         hour = 20,
         minutes = 45,
-        roster = {}
     },
     {
         id = "Fakeid5", 
@@ -224,21 +254,30 @@ local eventsFakeDb = {
         year = 2020,
         hour = 20,
         minutes = 45,
-        roster = {}
     },
 }
 
 function ScepCalendar:CreateNewEvent(eventData)
-end
+    ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
 
-function ScepCalendar:GetEventsForMonth(month, year)
+    --ScepCalendar.db.profiles.events[#ScepCalendar.db.profiles.events + 1] = eventData
+    ScepCalendar.db.profiles.events[eventData.year] = ScepCalendar.db.profiles.events[eventData.year] or {}
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month] = ScepCalendar.db.profiles.events[eventData.year][eventData.month] or {}
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] or {}
+    local r = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day];
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][#r + 1] = eventData
+    
+    ScepCalendar.db.profiles.dbVersion = ScepCalendar.db.profiles.dbVersion + 1
+    print("Create event")
+    ScepCalendar:ExportDB();
 end
 
 function ScepCalendar:GetEventsForDay(day, month, year)
-    if (day == 31 and month == 10 and year == 2019) then
-        return eventsFakeDb
+    if ScepCalendar.db and ScepCalendar.db.profiles.events[year] and ScepCalendar.db.profiles.events[year][month] and ScepCalendar.db.profiles.events[year][month][day] then
+        return ScepCalendar.db.profiles.events[year][month][day]
+    else
+        return {}
     end
-    return {}
 end
 
-NS.ScepCalendar = ScepCalendar;
+NS.ScepCalendar = ScepCalendar

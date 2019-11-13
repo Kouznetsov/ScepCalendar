@@ -137,9 +137,13 @@ for k, v in next, weekdayStrings do
 end
 
 function showEventsDetailsFrame(event)
-    local eventDetailsFrame =
-        mainContainer.eventDetailsFrame or
-        CreateFrame("Frame", "EventDetailsFrame", mainContainer, "BasicFrameTemplateWithInset")
+    local eventDetailsFrame
+
+    if (mainContainer.eventDetailsFrame == nil) then 
+        eventDetailsFrame = CreateFrame("Frame", "EventDetailsFrame", mainContainer, "BasicFrameTemplateWithInset")
+    else
+        eventDetailsFrame = mainContainer.eventDetailsFrame
+    end
 
     if (mainContainer.newEventFrame) then
         mainContainer.newEventFrame:Hide()
@@ -175,14 +179,15 @@ function showEventsDetailsFrame(event)
     -- Sign up button
     eventDetailsFrame.signUpOrOutBtn =
         eventDetailsFrame.signUpOrOutBtn or
-        CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIButtonPanelTemplate")
+        CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIPanelButtonTemplate")
     eventDetailsFrame.signUpOrOutBtn:SetSize(140, 20)
     local suooTxt = "S'inscrire"
-    for i = 1, #event.roster, 1 do
+    --[[] for i = 1, #event.roster, 1 do
         if event.roster[i].name == NS.config.playerName then
             suooTxt = "Se désinscrire"
         end
     end
+    ]]--
     eventDetailsFrame.signUpOrOutBtn:SetText(suooTxt)
     eventDetailsFrame.signUpOrOutBtn:SetScript(
         "OnClick",
@@ -403,11 +408,11 @@ function showNewEventFrame()
                 year = yearLabel:GetText(),
                 hour = chosenHour,
                 minutes = chosenMinutes,
-                roster = {}
             }
             newEventFrame.eventDescriptionEdit:SetText("")
             newEventFrame.eventNameEdit:SetText("")
             -- create event in db and share thru network
+            NS.ScepCalendar.CreateNewEvent(NS.ScepCalendar, event)
             mainContainer.eventsForDayFrame:Hide()
             showEventsDetailsFrame(event)
         end
@@ -473,7 +478,7 @@ function showEventsForDay(day)
         eventFrame.title:SetSize(170, 10)
         eventFrame.title:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -5)
         -- Amount of people in the roster
-        eventFrame.rosterSize =
+        --[[eventFrame.rosterSize =
             eventFrame.rosterSize or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         local rosterSizePresent = 0
         for i = 1, #currentEvent.roster, 1 do
@@ -483,6 +488,8 @@ function showEventsForDay(day)
         end
         eventFrame.rosterSize:SetText(rosterSizePresent .. " participants")
         eventFrame.rosterSize:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -25)
+        ]]--
+
         -- Created by
         eventFrame.author = eventFrame.author or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         eventFrame.author:SetText("Créé par " .. currentEvent.author)
