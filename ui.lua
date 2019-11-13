@@ -82,22 +82,22 @@ function showMainContainer()
     -- Main Frame
     mainContainer:SetSize(700, 550)
     mainContainer:SetPoint("CENTER", UIParent, "CENTER")
-    mainContainer.title = mainContainer:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
+    mainContainer.title = mainContainer.title or mainContainer:CreateFontString(nil, "BACKGROUND", "GameFontHighlight")
     mainContainer.title:SetPoint("CENTER", mainContainer.TitleBg, "CENTER", 10, 0)
     mainContainer.title:SetText("Scep Calendar")
 
     -- Current month label
-    mainContainer.currentMonthLabel = mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    mainContainer.currentMonthLabel = mainContainer.currentMonthLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     mainContainer.currentMonthLabel:SetText(monthsStrings[currentMonth])
     mainContainer.currentMonthLabel:SetPoint("CENTER", mainContainer.Bg, "TOP", 0, -30)
 
     -- Current year label
-    mainContainer.currentYearLabel = mainContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainContainer.currentYearLabel = mainContainer.currentYearLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     mainContainer.currentYearLabel:SetText(currentYear)
     mainContainer.currentYearLabel:SetPoint("CENTER", mainContainer.Bg, "TOP", 0, -45)
 
     -- Next month button
-    mainContainer.nextMonthBtn =
+    mainContainer.nextMonthBtn = mainContainer.nextMonthBtn or
         CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
     mainContainer.nextMonthBtn:SetText(">")
     mainContainer.nextMonthBtn:SetScript("OnClick", onNextMonthClick)
@@ -105,7 +105,7 @@ function showMainContainer()
     mainContainer.nextMonthBtn:SetSize(30, 30)
 
     -- Previous month button
-    mainContainer.previousMonthBtn =
+    mainContainer.previousMonthBtn = mainContainer.previousMonthBtn or
         CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
     mainContainer.previousMonthBtn:SetText("<")
     mainContainer.previousMonthBtn:SetScript("OnClick", onPreviousMonthClick)
@@ -113,12 +113,12 @@ function showMainContainer()
     mainContainer.previousMonthBtn:SetSize(30, 30)
 
     -- Calendar Frame
-    mainContainer.monthContainer = CreateFrame("Frame", "ScepCalendarMonthContainer", mainContainer)
+    mainContainer.monthContainer = mainContainer.monthContainer or CreateFrame("Frame", "ScepCalendarMonthContainer", mainContainer)
     mainContainer.monthContainer:SetSize(680, 350)
     mainContainer.monthContainer:SetPoint("CENTER", mainContainer, "CENTER", 0, -23)
 
     -- Weekdays labels
-    mainContainer.monthContainer.weekdays = {}
+    mainContainer.monthContainer.weekdays = mainContainer.monthContainer.weekdays or {}
     for k, v in next, weekdayStrings do
         local xOffset = ((k - 1) * 97)
         local str = weekdayStrings[k]

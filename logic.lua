@@ -2,6 +2,9 @@ local addonName, NS = ...
 NS = NS or {}
 NS.logic = {}
 
+
+
+
 local COMMPREFIX = "ScepCalendarComm"
 local Requests = {
     HELLO = "hello",
@@ -257,6 +260,18 @@ local eventsFakeDb = {
     },
 }
 
+function DeepPrint (e)
+    -- if e is a table, we should iterate over its elements
+    if type(e) == "table" then
+        for k,v in pairs(e) do -- for every element in the table
+            print(k)
+            DeepPrint(v)       -- recursively repeat the same procedure
+        end
+    else -- if not, we can just print it
+        print(e)
+    end
+end
+
 function ScepCalendar:CreateNewEvent(eventData)
     ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
 
@@ -267,17 +282,53 @@ function ScepCalendar:CreateNewEvent(eventData)
     local r = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day];
     ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][#r + 1] = eventData
     
+
+    --print("Creating event with title from db = " .. ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][1].title)
+    print("creating event for date " .. eventData.day .. "/" .. eventData.month .. "/" .. eventData.year)
+    print("testing: " .. ScepCalendar.db.profiles.events["2019"][11][30][1].title)
     ScepCalendar.db.profiles.dbVersion = ScepCalendar.db.profiles.dbVersion + 1
     print("Create event")
     ScepCalendar:ExportDB();
 end
 
+
 function ScepCalendar:GetEventsForDay(day, month, year)
-    if ScepCalendar.db and ScepCalendar.db.profiles.events[year] and ScepCalendar.db.profiles.events[year][month] and ScepCalendar.db.profiles.events[year][month][day] then
-        return ScepCalendar.db.profiles.events[year][month][day]
+    --print(day .. "/" .. month .. "/" .. year)
+    
+    --DeepPrint(ScepCalendar.db.profiles.events)
+    
+   --[[] if (ScepCalendar.db.profiles.events[year]) then
+        print("there are events this year" .. year)
+        if (ScepCalendar.db.profiles.events[year][month]) then
+            print("there are events this month" .. month)
+            if ScepCalendar.db.profiles.events[year][month][day] then
+                print("there are events this day" .. day)
+            else 
+                print("No events this day" .. day)
+            end
+        else
+            print("No events this month" .. month)
+        end
     else
+        print("No events this year" .. year)
+    end
+]]
+
+
+    if ScepCalendar.db.profiles.events[tostring(year)] and ScepCalendar.db.profiles.events[tostring(year)][month] and ScepCalendar.db.profiles.events[tostring(year)][month][day] then
+        --print("YES")
+        return ScepCalendar.db.profiles.events[tostring(year)][month][day]
+    else
+        --print("NO")
         return {}
     end
+end
+
+
+SLASH_WIPESCEPDB1 = "/wipescepdb"
+SlashCmdList["WIPESCEPDB"] = function()
+    ScepCalendar.db.profiles.events = {}
+    print("Database wiped")
 end
 
 NS.ScepCalendar = ScepCalendar
