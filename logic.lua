@@ -2,13 +2,14 @@ local addonName, NS = ...
 NS = NS or {}
 NS.logic = {}
 
-
-
-
 local COMMPREFIX = "ScepCalendarComm"
 local Requests = {
     HELLO = "hello",
-    DB_EXPORT = "exportDB"
+    DB_EXPORT = "exportDB",
+    SUBSCRIBE = "subscribe",
+    UNSUBSCRIBE = "unsubscribe",
+    PLAYER_SUBSCRRIPTIONS = "playerSubsribes",
+    UNHASHED_SUBSCRIPTIONS = "unhashedPlayersSubscriptions"
 }
 local RequestType = {
     REQUEST = "request",
@@ -50,17 +51,25 @@ function ScepCalendar_wait(delay, func, ...)
     return true
 end
 
-ScepCalendar = LibStub("AceAddon-3.0"):NewAddon("ScepCalendar", "AceConsole-3.0", "AceComm-3.0", "AceSerializer-3.0")
+ScepCalendar =
+    LibStub("AceAddon-3.0"):NewAddon(
+    "ScepCalendar",
+    "AceConsole-3.0",
+    "AceComm-3.0",
+    "AceSerializer-3.0",
+    "AceTimer-3.0"
+)
 
 function ScepCalendar:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("ScepCalendarDB")
     self.db.profiles.dbVersion = self.db.profiles.dbVersion or 1
     print("DB_VERSION: " .. self.db.profiles.dbVersion)
     self:RequestHello()
+    self:ScheduleRepeatingTimer("BroadcastSubscriptions", 15)
 end
 
 function ScepCalendar:OnEnable()
-    self:Print("Merci d'utiliser ScepCalendar. Reportez les bugs en courrier in game à Bordel.")
+    self:Print("Merci d'utiliser ScepCalendar. Reportez les bugs en message discord à Bordel.")
 end
 
 function ScepCalendar:OnDisable()
@@ -76,6 +85,10 @@ function ScepCalendar:OnCommCallback(message, channel, sender)
             ScepCalendar:OnReceiveHello(data, sender)
         elseif (data.request == Requests.DB_EXPORT) then
             ScepCalendar:OnReceiveDbExport(data)
+        elseif (data.request == Requests.PLAYER_SUBSCRRIPTIONS) then
+            ScepCalendar:OnReceiveBroadcastSubscriptions(data, sender)
+        elseif (data.request == Requests.UNHASHED_SUBSCRIPTIONS) then
+            ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
         else
             print(
                 "UNKNOWN COMM RECEIVED: channel: " ..
@@ -123,10 +136,10 @@ function ScepCalendar:OnReceiveHello(data, sender)
             addonVersion = NS.config.addonVersion,
             version = self.db.profiles.dbVersion
         }
-        if (data.version > self.db.profiles.dbVersion) then 
+        if (data.version > self.db.profiles.dbVersion) then
             print("Received DB version > to ours, asking for his DB")
             ScepCalendar:RequestExportDB(sender)
-        else 
+        else
             print("Sending own version as response to " .. sender)
             self:Send(rqData, sender)
         end
@@ -156,9 +169,8 @@ function ScepCalendar:OnReceiveHello(data, sender)
                 ScepCalendar.newAddonVersionShown = true
             end
             if (highestVersion.sender ~= NS.config.characterName) then
-            -- If i don't have the highest DB version
-            -- TODO Envoyer une demande de db export à highestVersion.sender
-            ScepCalendar:RequestExportDB(highestVersion.sender)
+                -- If i don't have the highest DB version
+                ScepCalendar:RequestExportDB(highestVersion.sender)
             end
             helloBatchRunning = false
         end
@@ -169,7 +181,60 @@ function ScepCalendar:OnReceiveHello(data, sender)
     end
 end
 
-function ScepCalendar:OnReceiveDbExport(data, sender) 
+function ScepCalendar:BroadcastSubscriptions()
+    ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
+    local hash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
+    local rqData = {
+        hash = hash,
+        rqType = RequestType.BROADCAST,
+        request = Requests.PLAYER_SUBSCRRIPTIONS
+    }
+    ScepCalendar:Send(rqData)
+end
+
+function ScepCalendar:OnReceiveBroadcastSubscriptions(data, sender)
+    local selfHash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
+    if data.hash ~= selfHash then
+        local rqData = {
+            request = Requests.UNHASHED_SUBSCRIPTIONS,
+            rqType = RequestType.REQUEST
+        }
+        ScepCalendar:Send(data, sender)
+    end
+end
+
+function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
+    if data.rqType == RequestType.REQUEST then
+        -- Send nos unhashed subs au sender
+        ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
+        local rqData = {
+            data = ScepCalendar.db.profiles.subscriptions,
+            rqType = RequestType.RESPONSE,
+            request = Requests.UNHASHED_SUBSCRIPTIONS
+        }
+        ScepCalendar:Send(rqData, sender)
+    elseif data.rqType == RequestType.RESPONSE then
+        -- Comparer les hash et recuperer les plus recentes subscriptions pour les update dans notre db
+        local otherSubs = data.data
+        local ourSubs = ScepCalendar.db.profiles.subscriptions or {}
+
+        for k, v in ipairs(otherSubs) do
+            if ourSubs[k] then
+                -- Si on a déjà une entrée pour ce joueur, comparer le timestamp
+                if ourSubs[k].lastModification < v.lastModification then
+                    -- Si le timestamp reçu est supérieur au notre, remplacer notre entry par la leur
+                    ourSubs[k] = v
+                end
+            else
+                -- Si on en a pas, la rajouter
+                ourSubs[k] = v
+            end
+        end
+        ScepCalendar.db.profiles.subscriptions = ourSubs
+    end
+end
+
+function ScepCalendar:OnReceiveDbExport(data, sender)
     if (data.rqType == RequestType.REQUEST) then
         print("Receive DB Export request")
         ScepCalendar:ExportDB(sender)
@@ -186,7 +251,7 @@ end
 function ScepCalendar:RequestExportDB(sender)
     local rqData = {
         rqType = RequestType.REQUEST,
-        request = Requests.DB_EXPORT,
+        request = Requests.DB_EXPORT
     }
     ScepCalendar:Send(rqData, sender)
 end
@@ -199,7 +264,7 @@ function ScepCalendar:ExportDB(sender)
         version = self.db.profiles.dbVersion
     }
     print("sending our own DB")
-    ScepCalendar:Send(rqData, sender);    
+    ScepCalendar:Send(rqData, sender)
 end
 
 ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
@@ -209,23 +274,78 @@ ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
 function ScepCalendar:CreateNewEvent(eventData)
     ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
     ScepCalendar.db.profiles.events[eventData.year] = ScepCalendar.db.profiles.events[eventData.year] or {}
-    ScepCalendar.db.profiles.events[eventData.year][eventData.month] = ScepCalendar.db.profiles.events[eventData.year][eventData.month] or {}
-    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] or {}
-    local r = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day];
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month] =
+        ScepCalendar.db.profiles.events[eventData.year][eventData.month] or {}
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] =
+        ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] or {}
+    local r = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day]
     ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][#r + 1] = eventData
     ScepCalendar.db.profiles.dbVersion = ScepCalendar.db.profiles.dbVersion + 1
-    ScepCalendar:ExportDB();
+    ScepCalendar:ExportDB()
 end
 
-
 function ScepCalendar:GetEventsForDay(day, month, year)
-    if ScepCalendar.db.profiles.events[tostring(year)] and ScepCalendar.db.profiles.events[tostring(year)][month] and ScepCalendar.db.profiles.events[tostring(year)][month][day] then
+    if
+        ScepCalendar.db.profiles.events[tostring(year)] and ScepCalendar.db.profiles.events[tostring(year)][month] and
+            ScepCalendar.db.profiles.events[tostring(year)][month][day]
+     then
         return ScepCalendar.db.profiles.events[tostring(year)][month][day]
     else
         return {}
     end
 end
 
+function ScepCalendar:SignupForEvent(event)
+    local localizedClass, englishClass, classIndex = UnitClass("unit")
+
+    ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification = time()
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[#ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events + 1] = event.id
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
+        NS.utils.removeDuplicates(ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events)
+    print("Signed up for " .. event.title)
+    print("Self subscriptions length " .. #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events)
+    for i = 1, #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events, 1 do
+        print(ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[i])
+    end
+end
+
+function ScepCalendar:IsSubscribedToEvent(id)
+    ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+
+    for i = 1, #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events, 1 do
+        if ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[i] == id then
+            return true
+        end
+    end
+    return false
+end
+
+function ScepCalendar:SignOutOfEvent(event)
+    --[[ for i = 1, #ScepCalendar.db.profiles.subscriptions, 1 do
+        if ScepCalendar.db.profiles.subscriptions[i] == event.id then
+            table.remove(ScepCalendar.db.profiles.subscriptions, i)
+            return
+        end
+    end
+    local rqData = {
+        rqType = RequestType.BROADCAST,
+        request = Requests.UNSUBSCRIBE,
+        eventId = event.id,
+        eventDay = event.day,
+        eventMonth = event.month,
+        eventYear = event.year
+    }
+    ScepCalendar:Send(rqData)
+    ]]
+end
 
 SLASH_WIPESCEPDB1 = "/wipescepdb"
 SlashCmdList["WIPESCEPDB"] = function()

@@ -13,6 +13,34 @@ SLASH_SHOWSCEPCALENDAR1 = "/scepcalendar"
 SlashCmdList["SHOWSCEPCALENDAR"] = function()
     showMainContainer()
 end
+--[[
+Death Knight	196	31	59	0.77	0.12	0.23	#C41F3B	Red †
+Demon Hunter	163	48	201	0.64	0.19	0.79	#A330C9	Dark Magenta
+Druid	255	125	10	1.00	0.49	0.04	#FF7D0A	Orange
+Hunter	169	210	113	0.67	0.83	0.45	#A9D271	Green
+Mage	64	199	235	0.25	0.78	0.92	#40C7EB	Light Blue
+Monk	0	255	150	0.00	1.00	0.59	#00FF96	Spring Green
+Paladin	245	140	186	0.96	0.55	0.73	#F58CBA	Pink
+Priest	255	255	255	1.00	1.00	1.00	#FFFFFF	White*
+Rogue	255	245	105	1.00	0.96	0.41	#FFF569	Yellow*
+Shaman	0	112	222	0.00	0.44	0.87	#0070DE	Blue
+Warlock	135	135	237	0.53	0.53	0.93	#8787ED	Purple
+Warrior	199	156	110	0.78	0.61	0.43	#C79C6E	Tan
+
+]]
+
+
+local classColors = {
+    paladin = {R = 0.78, G = 0.61, B = 0.43}, 
+    warrior = {R = 0.96, G = 0.55, B = 0.73},
+    warlock = {R = 0.67, G = 0.83, B = 0.45}, 
+    rogue = {R = 1.00, G = 0.96, B = 0.41}, 
+    priest = {R = 1, G = 1, B = 1}, 
+    shaman = {R = 0, G = 0.44, B = 0.87},
+    mage = {R = 0.25, G = 0.78, B = 0.92}, 
+    hunter = {R = 0.53, G = 0.53, B = 0.93}, 
+    druid = {R = 1, G = 0.49, B = 0.04}, 
+};
 
 for i = 1, NUM_CHAT_WINDOWS do
     _G["ChatFrame" .. i .. "EditBox"]:SetAltArrowKeyMode(false)
@@ -87,17 +115,20 @@ function showMainContainer()
     mainContainer.title:SetText("Scep Calendar")
 
     -- Current month label
-    mainContainer.currentMonthLabel = mainContainer.currentMonthLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    mainContainer.currentMonthLabel =
+        mainContainer.currentMonthLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     mainContainer.currentMonthLabel:SetText(monthsStrings[currentMonth])
     mainContainer.currentMonthLabel:SetPoint("CENTER", mainContainer.Bg, "TOP", 0, -30)
 
     -- Current year label
-    mainContainer.currentYearLabel = mainContainer.currentYearLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainContainer.currentYearLabel =
+        mainContainer.currentYearLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     mainContainer.currentYearLabel:SetText(currentYear)
     mainContainer.currentYearLabel:SetPoint("CENTER", mainContainer.Bg, "TOP", 0, -45)
 
     -- Next month button
-    mainContainer.nextMonthBtn = mainContainer.nextMonthBtn or
+    mainContainer.nextMonthBtn =
+        mainContainer.nextMonthBtn or
         CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
     mainContainer.nextMonthBtn:SetText(">")
     mainContainer.nextMonthBtn:SetScript("OnClick", onNextMonthClick)
@@ -105,7 +136,8 @@ function showMainContainer()
     mainContainer.nextMonthBtn:SetSize(30, 30)
 
     -- Previous month button
-    mainContainer.previousMonthBtn = mainContainer.previousMonthBtn or
+    mainContainer.previousMonthBtn =
+        mainContainer.previousMonthBtn or
         CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
     mainContainer.previousMonthBtn:SetText("<")
     mainContainer.previousMonthBtn:SetScript("OnClick", onPreviousMonthClick)
@@ -113,7 +145,8 @@ function showMainContainer()
     mainContainer.previousMonthBtn:SetSize(30, 30)
 
     -- Calendar Frame
-    mainContainer.monthContainer = mainContainer.monthContainer or CreateFrame("Frame", "ScepCalendarMonthContainer", mainContainer)
+    mainContainer.monthContainer =
+        mainContainer.monthContainer or CreateFrame("Frame", "ScepCalendarMonthContainer", mainContainer)
     mainContainer.monthContainer:SetSize(680, 350)
     mainContainer.monthContainer:SetPoint("CENTER", mainContainer, "CENTER", 0, -23)
 
@@ -164,6 +197,7 @@ end
 function showEventsDetailsFrame(event)
     local eventDetailsFrame
 
+
     if (UI.mainContainer.eventDetailsFrame == nil) then
         eventDetailsFrame = CreateFrame("Frame", "EventDetailsFrame", UI.mainContainer, "BasicFrameTemplateWithInset")
     else
@@ -173,8 +207,8 @@ function showEventsDetailsFrame(event)
     if (UI.mainContainer.newEventFrame) then
         UI.mainContainer.newEventFrame:Hide()
     end
-    eventDetailsFrame:SetSize(300, 550)
-    eventDetailsFrame:SetPoint("RIGHT", UI.mainContainer, "RIGHT", 300, 0)
+    eventDetailsFrame:SetSize(350, 550)
+    eventDetailsFrame:SetPoint("RIGHT", UI.mainContainer, "RIGHT", 350, 0)
     -- Title
     eventDetailsFrame.title =
         eventDetailsFrame.title or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
@@ -186,7 +220,13 @@ function showEventsDetailsFrame(event)
     eventDetailsFrame.dateTime =
         eventDetailsFrame.dateTime or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     eventDetailsFrame.dateTime:SetText(event.hour .. " h " .. event.minutes)
-    eventDetailsFrame.dateTime:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -80)
+    eventDetailsFrame.dateTime:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -100)
+
+    -- Date
+    eventDetailsFrame.dateDate =
+        eventDetailsFrame.dateDate or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    eventDetailsFrame.dateDate:SetText(event.day .. "/" .. event.month .. "/" .. event.year)
+    eventDetailsFrame.dateDate:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -80)
 
     -- Description
     eventDetailsFrame.description =
@@ -198,7 +238,11 @@ function showEventsDetailsFrame(event)
     -- Signed up Label
     eventDetailsFrame.signedUpLabel =
         eventDetailsFrame.signedUpLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
-    eventDetailsFrame.signedUpLabel:SetText("Vous êtes inscrit pour cet event")
+    local subText = "Tu n'es pas inscrit à cet event"
+    if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
+        subText = "Tu es inscrit pour cet event"
+    end
+     eventDetailsFrame.signedUpLabel:SetText(subText)
     eventDetailsFrame.signedUpLabel:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -200)
 
     -- Sign up button
@@ -206,24 +250,66 @@ function showEventsDetailsFrame(event)
         eventDetailsFrame.signUpOrOutBtn or
         CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIPanelButtonTemplate")
     eventDetailsFrame.signUpOrOutBtn:SetSize(140, 20)
+    eventDetailsFrame.signUpOrOutBtn:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -220)
     local suooTxt = "S'inscrire"
-    --
-    --[[] for i = 1, #event.roster, 1 do
-        if event.roster[i].name == NS.config.playerName then
-            suooTxt = "Se désinscrire"
-        end
+    if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
+        suooTxt = "Se désinscrire"
     end
-    ]] eventDetailsFrame.signUpOrOutBtn:SetText(
-        suooTxt
-    )
+    eventDetailsFrame.signUpOrOutBtn:SetText(suooTxt)
     eventDetailsFrame.signUpOrOutBtn:SetScript(
         "OnClick",
         function()
-            -- s'inscrire a l'event
+            if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
+                NS.ScepCalendar:SignOutOfEvent(event)
+            else
+                NS.ScepCalendar:SignupForEvent(event)
+            end
+            showEventsDetailsFrame(event)
         end
     )
 
     -- Roster
+    -- Frame 
+    eventDetailsFrame.rosterFrame = eventDetailsFrame.rosterFrame or CreateFrame("Frame", "RosterFrame", eventDetailsFrame, "InsetFrameTemplate3")
+    eventDetailsFrame.rosterFrame:SetPoint("BOTTOMLEFT", eventDetailsFrame, "BOTTOMLEFT", 10, 5)
+    eventDetailsFrame.rosterFrame:SetSize(245, 285)
+    -- Names pool
+    if (eventDetailsFrame.rosterFrame.rosterLabelsPool == nil) then
+        eventDetailsFrame.rosterFrame.rosterLabelsPool = {}
+        for i = 1, 120, 1 do
+            eventDetailsFrame.rosterFrame.rosterLabelsPool[i] = eventDetailsFrame.rosterFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        end
+    end
+    --Hide labels pool
+    for i = 1, #eventDetailsFrame.rosterFrame.rosterLabelsPool, 1 do
+        eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:Hide()
+    end
+    -- Label
+    eventDetailsFrame.rosterLabel = eventDetailsFrame.rosterLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    eventDetailsFrame.rosterLabel:SetText("Roster")
+    eventDetailsFrame.rosterLabel:SetPoint("TOPLEFT", eventDetailsFrame.rosterFrame, "TOPLEFT", 4, 17)
+
+    -- Filling roster
+    event.roster = {
+        {name = "Nainchasseur", class = "warrior"}, {name = "Nainchasseur", class = "paladin"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "rogue"},{name = "Nainchasseur", class = "priest"},{name = "Nainchasseur", class = "shaman"},{name = "Nainchasseur", class = "warlock"},{name = "Nainchasseur", class = "druid"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},
+        {name = "Nainchasseur", class = "rogue"}, {name = "Nainchasseur", class = "priest"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},
+    }
+    
+
+    for i = 1, #event.roster, 1 do
+        local y = -((i - 1) % 23) * 12 - 3
+        local x = math.floor((i - 1) / 23) * 83 + 3 
+        local cc = classColors[event.roster[i].class]
+        eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetPoint("TOPLEFT", eventDetailsFrame.rosterFrame, "TOPLEFT", x, y)
+        eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetText(event.roster[i].name)
+        eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetTextColor(cc.R, cc.G, cc.B)
+        eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:Show()
+    end
+
+    -- classes recap
+    huntersLabel = eventDetailsFrame.huntersLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    huntersLabel:SetTextColor(classColors["hunter"].R, classColors["hunter"].G, classColors["hunter"].B)
+    huntersLabel:SetText()
 
     eventDetailsFrame:Show()
     UI.mainContainer.eventDetailsFrame = eventDetailsFrame
@@ -433,13 +519,14 @@ function showNewEventFrame()
                 month = chosenMonth,
                 year = yearLabel:GetText(),
                 hour = chosenHour,
-                minutes = chosenMinutes
+                minutes = chosenMinutes,
+                roster = {}
             }
             newEventFrame.eventDescriptionEdit:SetText("")
             newEventFrame.eventNameEdit:SetText("")
             -- create event in db and share thru network
             NS.ScepCalendar.CreateNewEvent(NS.ScepCalendar, event)
-            generateDayFrames();
+            generateDayFrames()
             UI.mainContainer.eventsForDayFrame:Hide()
             showEventsDetailsFrame(event)
         end

@@ -22,6 +22,6 @@ for k,v in next, l do
 end
 
 NS.utils.generateEventId = function()
-    return NS.utils.sha256(NS.config.characterName .. time());
+    return NS.config.characterName .. time()
 end
 

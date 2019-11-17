@@ -1,9 +1,9 @@
-local _, NS = ...;
-NS = NS or {};
+local _, NS = ...
+NS = NS or {}
 NS.utils = {}
 
-local MOD = 2^32
-local MODM = MOD-1
+local MOD = 2 ^ 32
+local MODM = MOD - 1
 local function memoize(f)
     local mt = {}
     local t = setmetatable({}, mt)
@@ -16,13 +16,13 @@ local function memoize(f)
 end
 local function make_bitop_uncached(t, m)
     local function bitop(a, b)
-        local res,p = 0,1
+        local res, p = 0, 1
         while a ~= 0 and b ~= 0 do
             local am, bm = a % m, b % m
             res = res + t[am][bm] * p
             a = (a - am) / m
             b = (b - bm) / m
-            p = p*m
+            p = p * m
         end
         res = res + (a + b) * p
         return res
@@ -30,44 +30,71 @@ local function make_bitop_uncached(t, m)
     return bitop
 end
 local function make_bitop(t)
-    local op1 = make_bitop_uncached(t,2^1)
-    local op2 = memoize(function(a) return memoize(function(b) return op1(a, b) end) end)
+    local op1 = make_bitop_uncached(t, 2 ^ 1)
+    local op2 =
+        memoize(
+        function(a)
+            return memoize(
+                function(b)
+                    return op1(a, b)
+                end
+            )
+        end
+    )
     return make_bitop_uncached(op2, 2 ^ (t.n or 1))
 end
-local bxor1 = make_bitop({[0] = {[0] = 0,[1] = 1}, [1] = {[0] = 1, [1] = 0}, n = 4})
+local bxor1 = make_bitop({[0] = {[0] = 0, [1] = 1}, [1] = {[0] = 1, [1] = 0}, n = 4})
 local function bxor(a, b, c, ...)
     local z = nil
     if b then
         a = a % MOD
         b = b % MOD
         z = bxor1(a, b)
-        if c then z = bxor(z, c, ...) end
+        if c then
+            z = bxor(z, c, ...)
+        end
         return z
-    elseif a then return a % MOD
-    else return 0 end
+    elseif a then
+        return a % MOD
+    else
+        return 0
+    end
 end
 local function band(a, b, c, ...)
     local z
     if b then
         a = a % MOD
         b = b % MOD
-        z = ((a + b) - bxor1(a,b)) / 2
-        if c then z = bit32_band(z, c, ...) end
+        z = ((a + b) - bxor1(a, b)) / 2
+        if c then
+            z = bit32_band(z, c, ...)
+        end
         return z
-    elseif a then return a % MOD
-    else return MODM end
+    elseif a then
+        return a % MOD
+    else
+        return MODM
+    end
 end
-local function bnot(x) return (-1 - x) % MOD end
+local function bnot(x)
+    return (-1 - x) % MOD
+end
 local function rshift1(a, disp)
-    if disp < 0 then return lshift(a,-disp) end
+    if disp < 0 then
+        return lshift(a, -disp)
+    end
     return math.floor(a % 2 ^ 32 / 2 ^ disp)
 end
 local function rshift(x, disp)
-    if disp > 31 or disp < -31 then return 0 end
+    if disp > 31 or disp < -31 then
+        return 0
+    end
     return rshift1(x % MOD, disp)
 end
 local function lshift(a, disp)
-    if disp < 0 then return rshift(a,-disp) end 
+    if disp < 0 then
+        return rshift(a, -disp)
+    end
     return (a * 2 ^ disp) % 2 ^ 32
 end
 local function rrotate(x, disp)
@@ -77,25 +104,79 @@ local function rrotate(x, disp)
     return rshift(x, disp) + lshift(low, 32 - disp)
 end
 local k = {
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
-    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
-    0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
-    0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
-    0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
-    0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+    0x428a2f98,
+    0x71374491,
+    0xb5c0fbcf,
+    0xe9b5dba5,
+    0x3956c25b,
+    0x59f111f1,
+    0x923f82a4,
+    0xab1c5ed5,
+    0xd807aa98,
+    0x12835b01,
+    0x243185be,
+    0x550c7dc3,
+    0x72be5d74,
+    0x80deb1fe,
+    0x9bdc06a7,
+    0xc19bf174,
+    0xe49b69c1,
+    0xefbe4786,
+    0x0fc19dc6,
+    0x240ca1cc,
+    0x2de92c6f,
+    0x4a7484aa,
+    0x5cb0a9dc,
+    0x76f988da,
+    0x983e5152,
+    0xa831c66d,
+    0xb00327c8,
+    0xbf597fc7,
+    0xc6e00bf3,
+    0xd5a79147,
+    0x06ca6351,
+    0x14292967,
+    0x27b70a85,
+    0x2e1b2138,
+    0x4d2c6dfc,
+    0x53380d13,
+    0x650a7354,
+    0x766a0abb,
+    0x81c2c92e,
+    0x92722c85,
+    0xa2bfe8a1,
+    0xa81a664b,
+    0xc24b8b70,
+    0xc76c51a3,
+    0xd192e819,
+    0xd6990624,
+    0xf40e3585,
+    0x106aa070,
+    0x19a4c116,
+    0x1e376c08,
+    0x2748774c,
+    0x34b0bcb5,
+    0x391c0cb3,
+    0x4ed8aa4a,
+    0x5b9cca4f,
+    0x682e6ff3,
+    0x748f82ee,
+    0x78a5636f,
+    0x84c87814,
+    0x8cc70208,
+    0x90befffa,
+    0xa4506ceb,
+    0xbef9a3f7,
+    0xc67178f2
 }
 local function str2hexa(s)
-    return (string.gsub(s, ".", function(c) return string.format("%02x", string.byte(c)) end))
+    return (string.gsub(
+        s,
+        ".",
+        function(c)
+            return string.format("%02x", string.byte(c))
+        end
+    ))
 end
 local function num2s(l, n)
     local s = ""
@@ -108,7 +189,9 @@ local function num2s(l, n)
 end
 local function s232num(s, i)
     local n = 0
-    for i = i, i + 3 do n = n*256 + string.byte(s, i) end
+    for i = i, i + 3 do
+        n = n * 256 + string.byte(s, i)
+    end
     return n
 end
 local function preproc(msg, len)
@@ -131,7 +214,9 @@ local function initH256(H)
 end
 local function digestblock(msg, i, H)
     local w = {}
-    for j = 1, 16 do w[j] = s232num(msg, i + (j - 1)*4) end
+    for j = 1, 16 do
+        w[j] = s232num(msg, i + (j - 1) * 4)
+    end
     for j = 17, 64 do
         local v = w[j - 15]
         local s0 = bxor(rrotate(v, 7), rrotate(v, 18), rshift(v, 3))
@@ -144,7 +229,7 @@ local function digestblock(msg, i, H)
         local maj = bxor(band(a, b), band(a, c), band(b, c))
         local t2 = s0 + maj
         local s1 = bxor(rrotate(e, 6), rrotate(e, 11), rrotate(e, 25))
-        local ch = bxor (band(e, f), band(bnot(e), g))
+        local ch = bxor(band(e, f), band(bnot(e), g))
         local t1 = h + s1 + ch + k[i] + w[i]
         h, g, f, e, d, c, b, a = g, f, e, d + t1, c, b, a, t1 + t2
     end
@@ -158,10 +243,33 @@ local function digestblock(msg, i, H)
     H[8] = band(H[8] + h)
 end
 
+NS.utils.removeDuplicates = function(tbl)
+    local res = {}
+
+    for i = 0, #tbl, 1 do 
+        local found = false
+
+        for j = 0, #res, 1 do
+            if res[j] == tbl[i] then
+                found = true
+            end
+        end
+        if not found then
+            res[#res + 1] = tbl[i]
+        end
+    end
+    return res
+end
+
 NS.utils.sha256 = function(msg)
     msg = preproc(msg, #msg)
     local H = initH256({})
-    for i = 1, #msg, 64 do digestblock(msg, i, H) end
-    return str2hexa(num2s(H[1], 4) .. num2s(H[2], 4) .. num2s(H[3], 4) .. num2s(H[4], 4) ..
-        num2s(H[5], 4) .. num2s(H[6], 4) .. num2s(H[7], 4) .. num2s(H[8], 4))
+    for i = 1, #msg, 64 do
+        digestblock(msg, i, H)
+    end
+    return str2hexa(
+        num2s(H[1], 4) ..
+            num2s(H[2], 4) ..
+                num2s(H[3], 4) .. num2s(H[4], 4) .. num2s(H[5], 4) .. num2s(H[6], 4) .. num2s(H[7], 4) .. num2s(H[8], 4)
+    )
 end
