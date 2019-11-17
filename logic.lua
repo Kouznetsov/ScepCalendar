@@ -65,7 +65,20 @@ function ScepCalendar:OnInitialize()
     self.db.profiles.dbVersion = self.db.profiles.dbVersion or 1
     print("DB_VERSION: " .. self.db.profiles.dbVersion)
     self:RequestHello()
-    self:ScheduleRepeatingTimer("BroadcastSubscriptions", 15)
+    self:BroadcastSubscriptions()
+    self:ScheduleRepeatingTimer("BroadcastSubscriptions", 20)
+
+    -- init
+    local playerClass, englishClass = UnitClass("player")
+    ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+    print("=*********** SETTING PLAYER CLASS TO ************** " .. englishClass)
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].class = string.lower(englishClass)
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification =
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification or time()
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
 end
 
 function ScepCalendar:OnEnable()
@@ -181,6 +194,24 @@ function ScepCalendar:OnReceiveHello(data, sender)
     end
 end
 
+function ScepCalendar:GetRosterForEvent(id)
+    local subs = ScepCalendar.db.profiles.subscriptions
+    local roster = {}
+
+    for player, data in pairs(subs) do
+        for _, eventId in pairs(data.events) do
+            if eventId == id then
+                print("new entry in roster: " .. player .. " the " .. data.class)
+                roster[#roster + 1] = {
+                    name = player,
+                    class = data.class
+                }
+            end
+        end
+    end
+    return roster
+end
+
 function ScepCalendar:BroadcastSubscriptions()
     ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
     local hash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
@@ -189,23 +220,40 @@ function ScepCalendar:BroadcastSubscriptions()
         rqType = RequestType.BROADCAST,
         request = Requests.PLAYER_SUBSCRRIPTIONS
     }
+    print("BROADCASTING SUBSCRIPTIONS")
     ScepCalendar:Send(rqData)
 end
 
 function ScepCalendar:OnReceiveBroadcastSubscriptions(data, sender)
+    print("Received broadcast subscriptions from " .. sender)
     local selfHash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
     if data.hash ~= selfHash then
+        print("hash is not the same, requesting unhashed subs to " .. sender)
+        --[[ print("---------------")
+        print("Other hash: " .. data.hash)
+        print("my hash:    " .. selfHash)
+        print("---------------")
+        ]]
         local rqData = {
             request = Requests.UNHASHED_SUBSCRIPTIONS,
             rqType = RequestType.REQUEST
         }
-        ScepCalendar:Send(data, sender)
+        ScepCalendar:Send(rqData, sender)
+    else
+        --[[
+        print("---------------")
+        print("Other hash: " .. data.hash)
+        print("my hash:    " .. selfHash)
+        print("---------------")
+        ]]
+        print("HASHES ARE SIMILAR WITH " .. sender)
     end
 end
 
 function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
     if data.rqType == RequestType.REQUEST then
         -- Send nos unhashed subs au sender
+        print("Received unhashed subs request, sending unhashed subs to " .. sender)
         ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
         local rqData = {
             data = ScepCalendar.db.profiles.subscriptions,
@@ -215,18 +263,43 @@ function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
         ScepCalendar:Send(rqData, sender)
     elseif data.rqType == RequestType.RESPONSE then
         -- Comparer les hash et recuperer les plus recentes subscriptions pour les update dans notre db
+        print("Received unhashed subs response, analyzing...")
         local otherSubs = data.data
         local ourSubs = ScepCalendar.db.profiles.subscriptions or {}
-
-        for k, v in ipairs(otherSubs) do
+        for i, v in pairs(otherSubs) do
+            print("INDEX : " .. i)
+            for a, b in pairs(v) do
+                if type(a) == "table" then
+                    for c, d in pairs(a) do
+                        print(c .. " = " .. d)
+                    end
+                else
+                    if type(b) == "table" then
+                        for e, f in pairs(b) do
+                            print(e .. " = " .. f)
+                        end
+                    else
+                        print(a .. " = " .. b)
+                    end
+                end
+            end
+            print(" ==== NEXT ==== ")
+        end
+        for k, v in pairs(otherSubs) do
             if ourSubs[k] then
+                print("We already have player " .. k .. "'s entry, checking timestamp")
                 -- Si on a déjà une entrée pour ce joueur, comparer le timestamp
+
+                print("ourSubs[k].lastModification = " .. ourSubs[k].lastModification)
+                print("otherSub.lastModification = " .. v.lastModification)
                 if ourSubs[k].lastModification < v.lastModification then
                     -- Si le timestamp reçu est supérieur au notre, remplacer notre entry par la leur
+                    print("Timestamp received greater than ours, replacing")
                     ourSubs[k] = v
                 end
             else
                 -- Si on en a pas, la rajouter
+                print("New entry detected for player " .. k)
                 ourSubs[k] = v
             end
         end
@@ -296,20 +369,39 @@ function ScepCalendar:GetEventsForDay(day, month, year)
 end
 
 function ScepCalendar:SignupForEvent(event)
-    local localizedClass, englishClass, classIndex = UnitClass("unit")
+    local playerClass, englishClass = UnitClass("player")
 
     ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
     ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
         ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].class = string.lower(englishClass)
     ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification = time()
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[#ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events + 1] = event.id
     ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
-        NS.utils.removeDuplicates(ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events)
-    print("Signed up for " .. event.title)
-    print("Self subscriptions length " .. #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events)
-    for i = 1, #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events, 1 do
-        print(ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[i])
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[
+            #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events + 1
+        ] = event.id
+    -- ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
+    --    NS.utils.removeDuplicates(ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events)
+    print("Signed up for event " .. event.title .. ", with id  " .. event.id)
+    print("EVENTS ARE NOW ")
+    for i, v in pairs(ScepCalendar.db.profiles.subscriptions) do
+        print("INDEX : " .. i)
+        for a, b in pairs(v) do
+            if type(a) == "table" then
+                for c, d in pairs(a) do
+                    print(c .. " = " .. d)
+                end
+            else
+                if type(b) == "table" then
+                    for e, f in pairs(b) do
+                        print(e .. " = " .. f)
+                    end
+                else
+                    print(a .. " = " .. b)
+                end
+            end
+        end
     end
 end
 
@@ -329,27 +421,18 @@ function ScepCalendar:IsSubscribedToEvent(id)
 end
 
 function ScepCalendar:SignOutOfEvent(event)
-    --[[ for i = 1, #ScepCalendar.db.profiles.subscriptions, 1 do
-        if ScepCalendar.db.profiles.subscriptions[i] == event.id then
-            table.remove(ScepCalendar.db.profiles.subscriptions, i)
-            return
+    for i = 1, #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events, 1 do
+        if ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[i] == event.id then
+            ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification = time()
+            table.remove(ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events, i)
         end
     end
-    local rqData = {
-        rqType = RequestType.BROADCAST,
-        request = Requests.UNSUBSCRIBE,
-        eventId = event.id,
-        eventDay = event.day,
-        eventMonth = event.month,
-        eventYear = event.year
-    }
-    ScepCalendar:Send(rqData)
-    ]]
 end
 
 SLASH_WIPESCEPDB1 = "/wipescepdb"
 SlashCmdList["WIPESCEPDB"] = function()
     ScepCalendar.db.profiles.events = {}
+    ScepCalendar.db.profiles.subscriptions = {}
     print("Database wiped")
 end
 

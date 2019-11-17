@@ -31,14 +31,14 @@ Warrior	199	156	110	0.78	0.61	0.43	#C79C6E	Tan
 
 
 local classColors = {
-    paladin = {R = 0.78, G = 0.61, B = 0.43}, 
-    warrior = {R = 0.96, G = 0.55, B = 0.73},
-    warlock = {R = 0.67, G = 0.83, B = 0.45}, 
+    warrior = {R = 0.78, G = 0.61, B = 0.43}, 
+    paladin = {R = 0.96, G = 0.55, B = 0.73},
+    hunter = {R = 0.67, G = 0.83, B = 0.45}, 
     rogue = {R = 1.00, G = 0.96, B = 0.41}, 
     priest = {R = 1, G = 1, B = 1}, 
     shaman = {R = 0, G = 0.44, B = 0.87},
     mage = {R = 0.25, G = 0.78, B = 0.92}, 
-    hunter = {R = 0.53, G = 0.53, B = 0.93}, 
+    warlock = {R = 0.53, G = 0.53, B = 0.93}, 
     druid = {R = 1, G = 0.49, B = 0.04}, 
 };
 
@@ -290,11 +290,7 @@ function showEventsDetailsFrame(event)
     eventDetailsFrame.rosterLabel:SetPoint("TOPLEFT", eventDetailsFrame.rosterFrame, "TOPLEFT", 4, 17)
 
     -- Filling roster
-    event.roster = {
-        {name = "Nainchasseur", class = "warrior"}, {name = "Nainchasseur", class = "paladin"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "rogue"},{name = "Nainchasseur", class = "priest"},{name = "Nainchasseur", class = "shaman"},{name = "Nainchasseur", class = "warlock"},{name = "Nainchasseur", class = "druid"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},
-        {name = "Nainchasseur", class = "rogue"}, {name = "Nainchasseur", class = "priest"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},{name = "Nainchasseur", class = "hunter"},
-    }
-    
+    event.roster = NS.ScepCalendar:GetRosterForEvent(event.id)
 
     for i = 1, #event.roster, 1 do
         local y = -((i - 1) % 23) * 12 - 3
