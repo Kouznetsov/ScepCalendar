@@ -4,11 +4,7 @@ NS.config = {}
 NS.config.addonVersion = 1
 NS.config.dbVersion = 1
 local guildName, guildRankName, guildRankIndex = GetGuildInfo("player");
-if guildName then
-    NS.config.hasGuild = true
-else
-    NS.config.hasGuild = false
-end
+NS.config.hasGuild = true
 
 local l = {
     "a2321281c76b3d375fee0e49b0fde8e31758a849b3a34410b5227220b1430fea",

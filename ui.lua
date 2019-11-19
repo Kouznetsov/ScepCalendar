@@ -11,7 +11,7 @@ end
 
 SLASH_SHOWSCEPCALENDAR1 = "/scepcalendar"
 SlashCmdList["SHOWSCEPCALENDAR"] = function()
-    if NS.config.hasGuild then
+    if GetGuildInfo("player") then
         showMainContainer()
     else
         NS.ScepCalendar:Print(NS.translate("must_have_guild"))

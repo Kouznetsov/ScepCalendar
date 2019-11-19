@@ -63,7 +63,7 @@ LibStub("AceAddon-3.0"):NewAddon(
 function ScepCalendar:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("ScepCalendarDB")
     self.db.profiles.dbVersion = self.db.profiles.dbVersion or 1
-    if NS.config.hasGuild then
+    if GetGuildInfo("player") then
         self:RequestHello()
         self:BroadcastSubscriptions()
         self:ScheduleRepeatingTimer("BroadcastSubscriptions", 20)
