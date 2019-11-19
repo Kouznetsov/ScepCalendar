@@ -11,7 +11,11 @@ end
 
 SLASH_SHOWSCEPCALENDAR1 = "/scepcalendar"
 SlashCmdList["SHOWSCEPCALENDAR"] = function()
-    showMainContainer()
+    if NS.config.hasGuild then
+        showMainContainer()
+    else
+        NS.ScepCalendar:Print(NS.translate("must_have_guild"))
+    end
 end
 --[[
 Death Knight	196	31	59	0.77	0.12	0.23	#C41F3B	Red †
@@ -31,15 +35,15 @@ Warrior	199	156	110	0.78	0.61	0.43	#C79C6E	Tan
 
 
 local classColors = {
-    warrior = {R = 0.78, G = 0.61, B = 0.43}, 
+    warrior = {R = 0.78, G = 0.61, B = 0.43},
     paladin = {R = 0.96, G = 0.55, B = 0.73},
-    hunter = {R = 0.67, G = 0.83, B = 0.45}, 
-    rogue = {R = 1.00, G = 0.96, B = 0.41}, 
-    priest = {R = 1, G = 1, B = 1}, 
+    hunter = {R = 0.67, G = 0.83, B = 0.45},
+    rogue = {R = 1.00, G = 0.96, B = 0.41},
+    priest = {R = 1, G = 1, B = 1},
     shaman = {R = 0, G = 0.44, B = 0.87},
-    mage = {R = 0.25, G = 0.78, B = 0.92}, 
-    warlock = {R = 0.53, G = 0.53, B = 0.93}, 
-    druid = {R = 1, G = 0.49, B = 0.04}, 
+    mage = {R = 0.25, G = 0.78, B = 0.92},
+    warlock = {R = 0.53, G = 0.53, B = 0.93},
+    druid = {R = 1, G = 0.49, B = 0.04},
 };
 
 for i = 1, NUM_CHAT_WINDOWS do
@@ -105,7 +109,7 @@ end
 
 function showMainContainer()
     local mainContainer =
-        UI.mainContainer or CreateFrame("Frame", "ScepCalendarMainContainer", UIParent, "BasicFrameTemplateWithInset")
+    UI.mainContainer or CreateFrame("Frame", "ScepCalendarMainContainer", UIParent, "BasicFrameTemplateWithInset")
 
     -- Main Frame
     mainContainer:SetSize(700, 550)
@@ -116,20 +120,20 @@ function showMainContainer()
 
     -- Current month label
     mainContainer.currentMonthLabel =
-        mainContainer.currentMonthLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    mainContainer.currentMonthLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     mainContainer.currentMonthLabel:SetText(monthsStrings[currentMonth])
     mainContainer.currentMonthLabel:SetPoint("CENTER", mainContainer.Bg, "TOP", 0, -30)
 
     -- Current year label
     mainContainer.currentYearLabel =
-        mainContainer.currentYearLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    mainContainer.currentYearLabel or mainContainer:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     mainContainer.currentYearLabel:SetText(currentYear)
     mainContainer.currentYearLabel:SetPoint("CENTER", mainContainer.Bg, "TOP", 0, -45)
 
     -- Next month button
     mainContainer.nextMonthBtn =
-        mainContainer.nextMonthBtn or
-        CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
+    mainContainer.nextMonthBtn or
+            CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
     mainContainer.nextMonthBtn:SetText(">")
     mainContainer.nextMonthBtn:SetScript("OnClick", onNextMonthClick)
     mainContainer.nextMonthBtn:SetPoint("CENTER", mainContainer, "TOP", 100, -50)
@@ -137,8 +141,8 @@ function showMainContainer()
 
     -- Previous month button
     mainContainer.previousMonthBtn =
-        mainContainer.previousMonthBtn or
-        CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
+    mainContainer.previousMonthBtn or
+            CreateFrame("Button", "ScepCalendarNexMonthBtn", mainContainer, "UIPanelButtonTemplate")
     mainContainer.previousMonthBtn:SetText("<")
     mainContainer.previousMonthBtn:SetScript("OnClick", onPreviousMonthClick)
     mainContainer.previousMonthBtn:SetPoint("CENTER", mainContainer, "TOP", -100, -50)
@@ -146,7 +150,7 @@ function showMainContainer()
 
     -- Calendar Frame
     mainContainer.monthContainer =
-        mainContainer.monthContainer or CreateFrame("Frame", "ScepCalendarMonthContainer", mainContainer)
+    mainContainer.monthContainer or CreateFrame("Frame", "ScepCalendarMonthContainer", mainContainer)
     mainContainer.monthContainer:SetSize(680, 350)
     mainContainer.monthContainer:SetPoint("CENTER", mainContainer, "CENTER", 0, -23)
 
@@ -169,14 +173,14 @@ function showMainContainer()
             xOffset = xOffset + 5
         end
         mainContainer.monthContainer.weekdays[k] =
-            mainContainer.monthContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        mainContainer.monthContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         mainContainer.monthContainer.weekdays[k]:SetText(str)
         mainContainer.monthContainer.weekdays[k]:SetPoint(
-            "TOPLEFT",
-            mainContainer.monthContainer,
-            "TOPLEFT",
-            30 + xOffset,
-            12
+                "TOPLEFT",
+                mainContainer.monthContainer,
+                "TOPLEFT",
+                30 + xOffset,
+                12
         )
     end
 
@@ -187,7 +191,7 @@ function showMainContainer()
         UI.dayFramesPool = {}
         for i = 1, 31, 1 do
             UI.dayFramesPool[i] =
-                CreateFrame("Frame", "ScepCalendarDay", mainContainer.monthContainer, "InsetFrameTemplate3")
+            CreateFrame("Frame", "ScepCalendarDay", mainContainer.monthContainer, "InsetFrameTemplate3")
         end
     end
     UI.mainContainer:Show()
@@ -211,44 +215,44 @@ function showEventsDetailsFrame(event)
     eventDetailsFrame:SetPoint("RIGHT", UI.mainContainer, "RIGHT", 350, 0)
     -- Title
     eventDetailsFrame.title =
-        eventDetailsFrame.title or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    eventDetailsFrame.title or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     eventDetailsFrame.title:SetText(event.title)
     eventDetailsFrame.title:SetSize(280, 50)
     eventDetailsFrame.title:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -30)
 
     -- Hour and minutes
     eventDetailsFrame.dateTime =
-        eventDetailsFrame.dateTime or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    eventDetailsFrame.dateTime or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     eventDetailsFrame.dateTime:SetText(event.hour .. " h " .. event.minutes)
     eventDetailsFrame.dateTime:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -100)
 
     -- Date
     eventDetailsFrame.dateDate =
-        eventDetailsFrame.dateDate or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    eventDetailsFrame.dateDate or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     eventDetailsFrame.dateDate:SetText(event.day .. "/" .. event.month .. "/" .. event.year)
     eventDetailsFrame.dateDate:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -80)
 
     -- Description
     eventDetailsFrame.description =
-        eventDetailsFrame.description or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    eventDetailsFrame.description or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     eventDetailsFrame.description:SetText(event.description)
     eventDetailsFrame.description:SetSize(280, 100)
     eventDetailsFrame.description:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -90)
 
     -- Signed up Label
     eventDetailsFrame.signedUpLabel =
-        eventDetailsFrame.signedUpLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
+    eventDetailsFrame.signedUpLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
     local subText = NS.translate("youre_not_signed_up_for_this_event")
     if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
         NS.translate("youre_signed_up_for_this_event")
     end
-     eventDetailsFrame.signedUpLabel:SetText(subText)
+    eventDetailsFrame.signedUpLabel:SetText(subText)
     eventDetailsFrame.signedUpLabel:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -200)
 
     -- Sign up button
     eventDetailsFrame.signUpOrOutBtn =
-        eventDetailsFrame.signUpOrOutBtn or
-        CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIPanelButtonTemplate")
+    eventDetailsFrame.signUpOrOutBtn or
+            CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIPanelButtonTemplate")
     eventDetailsFrame.signUpOrOutBtn:SetSize(140, 20)
     eventDetailsFrame.signUpOrOutBtn:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -220)
     local suooTxt = NS.translate("sign_up")
@@ -257,15 +261,15 @@ function showEventsDetailsFrame(event)
     end
     eventDetailsFrame.signUpOrOutBtn:SetText(suooTxt)
     eventDetailsFrame.signUpOrOutBtn:SetScript(
-        "OnClick",
-        function()
-            if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
-                NS.ScepCalendar:SignOutOfEvent(event)
-            else
-                NS.ScepCalendar:SignupForEvent(event)
+            "OnClick",
+            function()
+                if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
+                    NS.ScepCalendar:SignOutOfEvent(event)
+                else
+                    NS.ScepCalendar:SignupForEvent(event)
+                end
+                showEventsDetailsFrame(event)
             end
-            showEventsDetailsFrame(event)
-        end
     )
 
     -- Roster
@@ -301,7 +305,7 @@ function showEventsDetailsFrame(event)
 
     for i = 1, #event.roster, 1 do
         local y = -((i - 1) % 23) * 12 - 3
-        local x = math.floor((i - 1) / 23) * 83 + 3 
+        local x = math.floor((i - 1) / 23) * 83 + 3
         local cc = classColors[event.roster[i].class]
         eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetPoint("TOPLEFT", eventDetailsFrame.rosterFrame, "TOPLEFT", x, y)
         eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetText(event.roster[i].name)
@@ -376,11 +380,11 @@ function showNewEventFrame()
     local chosenHour = 20
     local chosenMinutes = 45
     local newEventFrame =
-        UI.mainContainer.newEventFrame or
-        CreateFrame("Frame", "CreateEventFrame", UI.mainContainer, "BasicFrameTemplateWithInset")
+    UI.mainContainer.newEventFrame or
+            CreateFrame("Frame", "CreateEventFrame", UI.mainContainer, "BasicFrameTemplateWithInset")
     local createEventBtn =
-        newEventFrame.createEventBtn or
-        CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
+    newEventFrame.createEventBtn or
+            CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
 
     if (UI.mainContainer.eventDetailsFrame ~= nil) then
         UI.mainContainer.eventDetailsFrame:Hide()
@@ -395,43 +399,43 @@ function showNewEventFrame()
     -- Event name
     -- Edit
     newEventFrame.eventNameEdit =
-        newEventFrame.eventNameEdit or CreateFrame("EditBox", "NewEventNameEdit", newEventFrame, "InputBoxTemplate")
+    newEventFrame.eventNameEdit or CreateFrame("EditBox", "NewEventNameEdit", newEventFrame, "InputBoxTemplate")
     newEventFrame.eventNameEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -20, -75)
     newEventFrame.eventNameEdit:SetMaxBytes(255)
     newEventFrame.eventNameEdit:SetScript(
-        "OnTextChanged",
-        function()
-            createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
-        end
+            "OnTextChanged",
+            function()
+                createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
+            end
     )
     newEventFrame.eventNameEdit:SetAutoFocus(false)
     newEventFrame.eventNameEdit:SetSize(200, 25)
     -- Label
     newEventFrame.eventNameLabel =
-        newEventFrame.eventNameLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.eventNameLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newEventFrame.eventNameLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -82)
     newEventFrame.eventNameLabel:SetText("Titre")
 
     -- Date dropdown menu
     -- Day Dropdown
     local dayDropdown =
-        newEventFrame.dayDropdown or
-        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    newEventFrame.dayDropdown or
+            CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
     dayDropdown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 0, -125)
     UIDropDownMenu_SetWidth(dayDropdown, 40)
     UIDropDownMenu_SetText(dayDropdown, chosenDay)
     UIDropDownMenu_Initialize(
-        dayDropdown,
-        function(self, level, multilist)
-            local info = UIDropDownMenu_CreateInfo()
-            info.func = self.SetValue
-            for i = 1, getDaysInMonth(chosenMonth), 1 do
-                info.text = i
-                info.checked = i == chosenDay
-                info.arg1 = i
-                UIDropDownMenu_AddButton(info, 1)
+            dayDropdown,
+            function(self, level, multilist)
+                local info = UIDropDownMenu_CreateInfo()
+                info.func = self.SetValue
+                for i = 1, getDaysInMonth(chosenMonth), 1 do
+                    info.text = i
+                    info.checked = i == chosenDay
+                    info.arg1 = i
+                    UIDropDownMenu_AddButton(info, 1)
+                end
             end
-        end
     )
     function dayDropdown:SetValue(newDay)
         chosenDay = newDay
@@ -441,24 +445,24 @@ function showNewEventFrame()
     newEventFrame.dayDropdown = dayDropdown
     -- Month dropdown
     local monthDropDown =
-        newEventFrame.monthDropDown or
-        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    newEventFrame.monthDropDown or
+            CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
     monthDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 60, -125)
     UIDropDownMenu_SetWidth(monthDropDown, 90)
     UIDropDownMenu_SetText(monthDropDown, monthsStrings[chosenMonth])
     UIDropDownMenu_Initialize(
-        monthDropDown,
-        function(self, level, multilist)
-            local info = UIDropDownMenu_CreateInfo()
-            info.func = self.SetValue
-            for i, v in ipairs(monthsStrings) do
-                info.text = v
-                info.checked = i == chosenMonth
-                info.arg1 = v
-                info.arg2 = i
-                UIDropDownMenu_AddButton(info, 1)
+            monthDropDown,
+            function(self, level, multilist)
+                local info = UIDropDownMenu_CreateInfo()
+                info.func = self.SetValue
+                for i, v in ipairs(monthsStrings) do
+                    info.text = v
+                    info.checked = i == chosenMonth
+                    info.arg1 = v
+                    info.arg2 = i
+                    UIDropDownMenu_AddButton(info, 1)
+                end
             end
-        end
     )
     function monthDropDown:SetValue(newMonth, index)
         if (getDaysInMonth(index) < getDaysInMonth(chosenMonth) and chosenDay > getDaysInMonth(index)) then
@@ -479,23 +483,23 @@ function showNewEventFrame()
     -- Time dropDowns
     -- Minutes dropdown
     local minutesDropDown =
-        newEventFrame.minutesDropDown or
-        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    newEventFrame.minutesDropDown or
+            CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
     minutesDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 75, -165)
     UIDropDownMenu_SetWidth(minutesDropDown, 40)
     UIDropDownMenu_SetText(minutesDropDown, chosenMinutes)
     UIDropDownMenu_Initialize(
-        minutesDropDown,
-        function(self, level, multilist)
-            local info = UIDropDownMenu_CreateInfo()
-            info.func = self.SetValue
-            for i = 0, 59, 5 do
-                info.text = i
-                info.checked = i == chosenMinutes
-                info.arg1 = i
-                UIDropDownMenu_AddButton(info, 1)
+            minutesDropDown,
+            function(self, level, multilist)
+                local info = UIDropDownMenu_CreateInfo()
+                info.func = self.SetValue
+                for i = 0, 59, 5 do
+                    info.text = i
+                    info.checked = i == chosenMinutes
+                    info.arg1 = i
+                    UIDropDownMenu_AddButton(info, 1)
+                end
             end
-        end
     )
     function minutesDropDown:SetValue(newMinutes)
         chosenMinutes = newMinutes
@@ -510,23 +514,23 @@ function showNewEventFrame()
     newEventFrame.hLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 80, -172)
     -- Hour dropdown
     local hourDropDown =
-        newEventFrame.hourDropDown or
-        CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
+    newEventFrame.hourDropDown or
+            CreateFrame("Frame", "NewEventFayDropdown", newEventFrame, "UIDropDownMenuTemplate")
     hourDropDown:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 0, -165)
     UIDropDownMenu_SetWidth(hourDropDown, 40)
     UIDropDownMenu_SetText(hourDropDown, chosenHour)
     UIDropDownMenu_Initialize(
-        hourDropDown,
-        function(self, level, multilist)
-            local info = UIDropDownMenu_CreateInfo()
-            info.func = self.SetValue
-            for i = 0, 23, 1 do
-                info.text = i
-                info.checked = i == chosenHour
-                info.arg1 = i
-                UIDropDownMenu_AddButton(info, 1)
+            hourDropDown,
+            function(self, level, multilist)
+                local info = UIDropDownMenu_CreateInfo()
+                info.func = self.SetValue
+                for i = 0, 23, 1 do
+                    info.text = i
+                    info.checked = i == chosenHour
+                    info.arg1 = i
+                    UIDropDownMenu_AddButton(info, 1)
+                end
             end
-        end
     )
     function hourDropDown:SetValue(newHour)
         chosenHour = newHour
@@ -538,8 +542,8 @@ function showNewEventFrame()
     -- Event description
     -- Edit
     newEventFrame.eventDescriptionEdit =
-        newEventFrame.eventDescriptionEdit or
-        CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame, "InputBoxTemplate")
+    newEventFrame.eventDescriptionEdit or
+            CreateFrame("EditBox", "NewEventDescriptionEdit", newEventFrame, "InputBoxTemplate")
     newEventFrame.eventDescriptionEdit:SetPoint("TOPRIGHT", newEventFrame, "TOPRIGHT", -17, -230)
     newEventFrame.eventDescriptionEdit:SetAutoFocus(false)
     newEventFrame.eventDescriptionEdit:SetMaxBytes(256)
@@ -550,41 +554,41 @@ function showNewEventFrame()
     --newEventFrame.eventDescriptionEdit:SetFont("Fonts\\FRIZQT__.TTF", 10)
     -- Label
     newEventFrame.eventDescriptionLabel =
-        newEventFrame.eventDescriptionLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    newEventFrame.eventDescriptionLabel or newEventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     newEventFrame.eventDescriptionLabel:SetPoint("TOPLEFT", newEventFrame, "TOPLEFT", 20, -210)
     newEventFrame.eventDescriptionLabel:SetText("Description")
 
     -- Create Event btn
     createEventBtn =
-        newEventFrame.createEventBtn or
-        CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
+    newEventFrame.createEventBtn or
+            CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
     createEventBtn:SetText("Créer")
     createEventBtn:SetPoint("BOTTOM", newEventFrame, "BOTTOM", 0, 18)
     createEventBtn:SetSize(100, 25)
     createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
     createEventBtn:SetScript(
-        "OnClick",
-        function()
-            local event = {
-                id = NS.utils.generateEventId(),
-                title = newEventFrame.eventNameEdit:GetText(),
-                description = newEventFrame.eventDescriptionEdit:GetText(),
-                author = NS.config.characterName,
-                day = chosenDay,
-                month = chosenMonth,
-                year = yearLabel:GetText(),
-                hour = chosenHour,
-                minutes = chosenMinutes,
-                roster = {}
-            }
-            newEventFrame.eventDescriptionEdit:SetText("")
-            newEventFrame.eventNameEdit:SetText("")
-            -- create event in db and share thru network
-            NS.ScepCalendar.CreateNewEvent(NS.ScepCalendar, event)
-            generateDayFrames()
-            UI.mainContainer.eventsForDayFrame:Hide()
-            showEventsDetailsFrame(event)
-        end
+            "OnClick",
+            function()
+                local event = {
+                    id = NS.utils.generateEventId(),
+                    title = newEventFrame.eventNameEdit:GetText(),
+                    description = newEventFrame.eventDescriptionEdit:GetText(),
+                    author = NS.config.characterName,
+                    day = chosenDay,
+                    month = chosenMonth,
+                    year = yearLabel:GetText(),
+                    hour = chosenHour,
+                    minutes = chosenMinutes,
+                    roster = {}
+                }
+                newEventFrame.eventDescriptionEdit:SetText("")
+                newEventFrame.eventNameEdit:SetText("")
+                -- create event in db and share thru network
+                NS.ScepCalendar.CreateNewEvent(NS.ScepCalendar, event)
+                generateDayFrames()
+                UI.mainContainer.eventsForDayFrame:Hide()
+                showEventsDetailsFrame(event)
+            end
     )
     newEventFrame.createEventBtn = createEventBtn
     -- Showing and setting to UI.mainContainer
@@ -599,32 +603,32 @@ function showEventsForDay(day)
     end
     if (UI.mainContainer.eventsForDayFrame == nil) then
         UI.mainContainer.eventsForDayFrame =
-            CreateFrame("Frame", "EventsForDay", UI.mainContainer, "BasicFrameTemplateWithInset")
+        CreateFrame("Frame", "EventsForDay", UI.mainContainer, "BasicFrameTemplateWithInset")
         UI.mainContainer.eventsForDayFrame:SetSize(200, 550)
         UI.mainContainer.eventsForDayFrame:SetPoint("LEFT", UI.mainContainer, "LEFT", -200, 0)
     end
     UI.mainContainer.eventsForDayFrame:Show()
     if (UI.mainContainer.eventsForDayFrame.title == nil) then
         UI.mainContainer.eventsForDayFrame.title =
-            UI.mainContainer.eventsForDayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+        UI.mainContainer.eventsForDayFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     end
     UI.mainContainer.eventsForDayFrame.title:SetText(
-        weekdayStrings[get_day_of_week(day, currentMonth, currentYear)] ..
-            " " .. day .. " " .. monthsStrings[currentMonth]
+            weekdayStrings[get_day_of_week(day, currentMonth, currentYear)] ..
+                    " " .. day .. " " .. monthsStrings[currentMonth]
     )
     UI.mainContainer.eventsForDayFrame.title:SetPoint("TOPLEFT", UI.mainContainer.eventsForDayFrame, "TOPLEFT", 10, -30)
     if (UI.mainContainer.eventsForDayFrame.createEventBtn == nil and NS.config.isAdmin) then
         UI.mainContainer.eventsForDayFrame.createEventBtn =
-            CreateFrame("Button", "CreateEventBtn", UI.mainContainer.eventsForDayFrame, "UIPanelButtonTemplate")
+        CreateFrame("Button", "CreateEventBtn", UI.mainContainer.eventsForDayFrame, "UIPanelButtonTemplate")
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetText("Créer un nouvel event")
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetScript("OnClick", showNewEventFrame)
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetSize(180, 25)
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetPoint(
-            "BOTTOM",
-            UI.mainContainer.eventsForDayFrame,
-            "BOTTOM",
-            0,
-            15
+                "BOTTOM",
+                UI.mainContainer.eventsForDayFrame,
+                "BOTTOM",
+                0,
+                15
         )
     end
     local eventsForDay = NS.ScepCalendar:GetEventsForDay(day, currentMonth, currentYear)
@@ -637,15 +641,15 @@ function showEventsForDay(day)
     for i = 1, #eventsForDay, 1 do
         local currentEvent = eventsForDay[i]
         local eventFrame =
-            eventsFrames[i] or
-            CreateFrame("Frame", "ScepCalendarEventFrame", UI.mainContainer.eventsForDayFrame, "InsetFrameTemplate3")
+        eventsFrames[i] or
+                CreateFrame("Frame", "ScepCalendarEventFrame", UI.mainContainer.eventsForDayFrame, "InsetFrameTemplate3")
         eventFrame:SetSize(180, 60)
         eventFrame:SetPoint(
-            "TOPLEFT",
-            UI.mainContainer.eventsForDayFrame,
-            "TOPLEFT",
-            10,
-            ((i - 1) * -60) - 50 - (i * 5)
+                "TOPLEFT",
+                UI.mainContainer.eventsForDayFrame,
+                "TOPLEFT",
+                10,
+                ((i - 1) * -60) - 50 - (i * 5)
         )
         -- Event Title
         eventFrame.title = eventFrame.title or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
@@ -665,16 +669,16 @@ function showEventsForDay(day)
         eventFrame.rosterSize:SetText(rosterSizePresent .. " participants")
         eventFrame.rosterSize:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -25)
         ]] eventFrame.author =
-            eventFrame.author or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    eventFrame.author or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         eventFrame.author:SetText("Créé par " .. currentEvent.author)
         eventFrame.author:SetPoint("BOTTOMRIGHT", eventFrame, "BOTTOMRIGHT", -8, 5)
         eventFrame:SetScript(
-            "OnMouseDown",
-            function(self, button)
-                if (button == "LeftButton") then
-                    showEventsDetailsFrame(currentEvent)
+                "OnMouseDown",
+                function(self, button)
+                    if (button == "LeftButton") then
+                        showEventsDetailsFrame(currentEvent)
+                    end
                 end
-            end
         )
         eventFrame:Show()
         eventsFrames[i] = eventFrame
@@ -725,12 +729,12 @@ function generateDayFrames()
             dayFrame.number:SetText(dayNumber)
             dayFrame.number:SetPoint("CENTER", dayFrame, "CENTER")
             dayFrame:SetScript(
-                "OnMouseDown",
-                function(self, button)
-                    if (button == "LeftButton") then
-                        showEventsForDay(dayNumber)
+                    "OnMouseDown",
+                    function(self, button)
+                        if (button == "LeftButton") then
+                            showEventsForDay(dayNumber)
+                        end
                     end
-                end
             )
             UI.mainContainer.monthContainer.days[i] = dayFrame
         end

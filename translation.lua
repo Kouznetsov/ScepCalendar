@@ -3,6 +3,44 @@ NS = NS or {}
 
 local locale = GetLocale()
 
+local esES = {
+    january = "Enero",
+    february = "Febrero",
+    march = "Marzo",
+    april = "Abril",
+    may = "Mayo",
+    june = "Junio",
+    july = "Julio",
+    august = "Agosto",
+    september = "Septiembre",
+    october = "Octubre",
+    november = "Noviembre",
+    december = "Diciembre",
+    monday = "Lunes",
+    tuesday = "Martes",
+    wednesday = "Miércoles",
+    thursday = "Jueves",
+    friday = "Viernes",
+    saturday = "Sábado",
+    sunday = "Domingo",
+    created_by = "Creado por ",
+    create_new_event = "Crear un nuevo evento",
+    sign_up = "Registrarse",
+    sign_out = "Cerrar sesión",
+    youre_signed_up_for_this_event = "Estás registrado para este evento",
+    youre_not_signed_up_for_this_event = "No estás registrado para este evento",
+    roster = "Lista",
+    warriors = "Guerreros",
+    paladins = "Paladines",
+    hunters = "Cazadores",
+    rogues = "Pícaros",
+    mages = "Magos",
+    priests = "Sacerdotes",
+    druids = "Druidas",
+    shamans = "Chamanes",
+    warlocks = "Brujos",
+}
+
 local frFR = {
     january = "Janvier",
     february = "Février",
@@ -39,6 +77,7 @@ local frFR = {
     druids = "druides",
     shamans = "chamans",
     warlocks = "démonistes",
+    must_have_guild = "Vous devez être dans une guilde pour utiliser ScepCalendar"
 }
 
 local enUS = {
@@ -77,12 +116,15 @@ local enUS = {
     druids = "druids",
     shamans = "shamans",
     warlocks = "warlocks",
+    must_have_guild = "You have to be in a guild to  use ScepCalendar"
 }
 
 local translations = {
     frFR = frFR,
     enUS = enUS,
-    enGB = enUS
+    enGB = enUS,
+    esES = esES,
+    esMX = esES
 }
 
 NS.translate = function(string)
