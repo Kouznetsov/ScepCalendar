@@ -297,8 +297,9 @@ function ScepCalendar:CreateNewEvent(eventData)
 end
 
 function ScepCalendar:GetEventsForDay(day, month, year)
-    if
-    ScepCalendar.db.profiles.events[tostring(year)] and ScepCalendar.db.profiles.events[tostring(year)][month] and
+    if ScepCalendar.db.profiles.events and
+            ScepCalendar.db.profiles.events[tostring(year)] and
+            ScepCalendar.db.profiles.events[tostring(year)][month] and
             ScepCalendar.db.profiles.events[tostring(year)][month][day]
     then
         return ScepCalendar.db.profiles.events[tostring(year)][month][day]
