@@ -71,7 +71,7 @@ local monthsStrings = {
     NS.translate("november"),
     NS.translate("december")
 }
-local weekdayStrings = {NS.translate("monday"), NS.translate("tuesday"), NS.translate("wendesday"), NS.translate("thursday"), NS.translate("friday"), NS.translate("saturday"), NS.translate("sunday")}
+local weekdayStrings = {NS.translate("monday"), NS.translate("tuesday"), NS.translate("wednesday"), NS.translate("thursday"), NS.translate("friday"), NS.translate("saturday"), NS.translate("sunday")}
 local currentMonth = date("*t").month
 local currentYear = date("*t").year
 
@@ -244,7 +244,7 @@ function showEventsDetailsFrame(event)
     eventDetailsFrame.signedUpLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
     local subText = NS.translate("youre_not_signed_up_for_this_event")
     if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
-        NS.translate("youre_signed_up_for_this_event")
+        subText = NS.translate("youre_signed_up_for_this_event")
     end
     eventDetailsFrame.signedUpLabel:SetText(subText)
     eventDetailsFrame.signedUpLabel:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -200)
@@ -562,7 +562,7 @@ function showNewEventFrame()
     createEventBtn =
     newEventFrame.createEventBtn or
             CreateFrame("Button", "NEF_CreateEventBtn", newEventFrame, "UIPanelButtonTemplate")
-    createEventBtn:SetText("Créer")
+    createEventBtn:SetText(NS.translate("create"))
     createEventBtn:SetPoint("BOTTOM", newEventFrame, "BOTTOM", 0, 18)
     createEventBtn:SetSize(100, 25)
     createEventBtn:SetEnabled(#newEventFrame.eventNameEdit:GetText() > 0)
@@ -620,7 +620,7 @@ function showEventsForDay(day)
     if (UI.mainContainer.eventsForDayFrame.createEventBtn == nil and NS.config.isAdmin) then
         UI.mainContainer.eventsForDayFrame.createEventBtn =
         CreateFrame("Button", "CreateEventBtn", UI.mainContainer.eventsForDayFrame, "UIPanelButtonTemplate")
-        UI.mainContainer.eventsForDayFrame.createEventBtn:SetText("Créer un nouvel event")
+        UI.mainContainer.eventsForDayFrame.createEventBtn:SetText(NS.translate("create_event"))
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetScript("OnClick", showNewEventFrame)
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetSize(180, 25)
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetPoint(
@@ -670,7 +670,7 @@ function showEventsForDay(day)
         eventFrame.rosterSize:SetPoint("TOPLEFT", eventFrame, "TOPLEFT", 5, -25)
         ]] eventFrame.author =
     eventFrame.author or eventFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        eventFrame.author:SetText("Créé par " .. currentEvent.author)
+        eventFrame.author:SetText(NS.translate("created_by") .. " " .. currentEvent.author)
         eventFrame.author:SetPoint("BOTTOMRIGHT", eventFrame, "BOTTOMRIGHT", -8, 5)
         eventFrame:SetScript(
                 "OnMouseDown",

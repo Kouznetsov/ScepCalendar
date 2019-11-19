@@ -66,7 +66,7 @@ function ScepCalendar:OnInitialize()
     if GetGuildInfo("player") then
         self:RequestHello()
         self:BroadcastSubscriptions()
-        self:ScheduleRepeatingTimer("BroadcastSubscriptions", 20)
+        self:ScheduleRepeatingTimer("BroadcastSubscriptions", 30)
 
         -- init
         local playerClass, englishClass = UnitClass("player")

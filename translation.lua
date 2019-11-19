@@ -39,6 +39,9 @@ local esES = {
     druids = "Druidas",
     shamans = "Chamanes",
     warlocks = "Brujos",
+    must_have_guild = "You have to be in a guild to  use ScepCalendar",
+    create = "Create",
+    create_event = "Create an event"
 }
 
 local frFR = {
@@ -77,7 +80,9 @@ local frFR = {
     druids = "druides",
     shamans = "chamans",
     warlocks = "démonistes",
-    must_have_guild = "Vous devez être dans une guilde pour utiliser ScepCalendar"
+    must_have_guild = "Vous devez être dans une guilde pour utiliser ScepCalendar",
+    create = "Créer",
+    create_event = "Créer un event"
 }
 
 local enUS = {
@@ -91,7 +96,7 @@ local enUS = {
     august = "August",
     september = "September",
     october = "October",
-    november = "Novembrer",
+    november = "November",
     december = "December",
     monday = "Monday",
     tuesday = "Tuesday",
@@ -116,7 +121,9 @@ local enUS = {
     druids = "druids",
     shamans = "shamans",
     warlocks = "warlocks",
-    must_have_guild = "You have to be in a guild to  use ScepCalendar"
+    must_have_guild = "You have to be in a guild to  use ScepCalendar",
+    create = "Create",
+    create_event = "Create an event"
 }
 
 local translations = {
