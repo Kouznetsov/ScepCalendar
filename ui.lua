@@ -54,20 +54,20 @@ end
 local lastDayClicked = 1
 
 local monthsStrings = {
-    "Janvier",
-    "Février",
-    "Mars",
-    "Avril",
-    "Mai",
-    "Juin",
-    "Juillet",
-    "Août",
-    "Septembre",
-    "Octobre",
-    "Novembre",
-    "Décembre"
+    NS.translate("january"),
+    NS.translate("february"),
+    NS.translate("march"),
+    NS.translate("april"),
+    NS.translate("may"),
+    NS.translate("june"),
+    NS.translate("july"),
+    NS.translate("august"),
+    NS.translate("september"),
+    NS.translate("october"),
+    NS.translate("november"),
+    NS.translate("december")
 }
-local weekdayStrings = {"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"}
+local weekdayStrings = {NS.translate("monday"), NS.translate("tuesday"), NS.translate("wendesday"), NS.translate("thursday"), NS.translate("friday"), NS.translate("saturday"), NS.translate("sunday")}
 local currentMonth = date("*t").month
 local currentYear = date("*t").year
 
@@ -238,9 +238,9 @@ function showEventsDetailsFrame(event)
     -- Signed up Label
     eventDetailsFrame.signedUpLabel =
         eventDetailsFrame.signedUpLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontGreen")
-    local subText = "Tu n'es pas inscrit à cet event"
+    local subText = NS.translate("youre_not_signed_up_for_this_event")
     if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
-        subText = "Tu es inscrit pour cet event"
+        NS.translate("youre_signed_up_for_this_event")
     end
      eventDetailsFrame.signedUpLabel:SetText(subText)
     eventDetailsFrame.signedUpLabel:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -200)
@@ -251,9 +251,9 @@ function showEventsDetailsFrame(event)
         CreateFrame("Button", "SignUpOrOutBtn", eventDetailsFrame, "UIPanelButtonTemplate")
     eventDetailsFrame.signUpOrOutBtn:SetSize(140, 20)
     eventDetailsFrame.signUpOrOutBtn:SetPoint("TOP", eventDetailsFrame, "TOP", 0, -220)
-    local suooTxt = "S'inscrire"
+    local suooTxt = NS.translate("sign_up")
     if (NS.ScepCalendar:IsSubscribedToEvent(event.id)) then
-        suooTxt = "Se désinscrire"
+        suooTxt = NS.translate("sign_out")
     end
     eventDetailsFrame.signUpOrOutBtn:SetText(suooTxt)
     eventDetailsFrame.signUpOrOutBtn:SetScript(
@@ -286,7 +286,7 @@ function showEventsDetailsFrame(event)
     end
     -- Label
     eventDetailsFrame.rosterLabel = eventDetailsFrame.rosterLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    eventDetailsFrame.rosterLabel:SetText("Roster")
+    eventDetailsFrame.rosterLabel:SetText(NS.translate("roster"))
     eventDetailsFrame.rosterLabel:SetPoint("TOPLEFT", eventDetailsFrame.rosterFrame, "TOPLEFT", 4, 17)
 
     -- Filling roster
@@ -312,50 +312,59 @@ function showEventsDetailsFrame(event)
 
     -- classes recap
     -- hunter label
-    huntersLabel = eventDetailsFrame.huntersLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local huntersLabel = eventDetailsFrame.huntersLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     huntersLabel:SetTextColor(classColors["hunter"].R, classColors["hunter"].G, classColors["hunter"].B)
     huntersLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -15)
-    huntersLabel:SetText(classesRecap.hunter .. " retards")
+    huntersLabel:SetText(classesRecap.hunter .. " ".. NS.translate("hunters"))
+    eventDetailsFrame.huntersLabel = huntersLabel
     -- rogues label
-    roguesLabel = eventDetailsFrame.roguesLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local roguesLabel = eventDetailsFrame.roguesLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     roguesLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -35)
     roguesLabel:SetTextColor(classColors["rogue"].R, classColors["rogue"].G, classColors["rogue"].B)
-    roguesLabel:SetText(classesRecap.rogue .. " tepu")
+    roguesLabel:SetText(classesRecap.rogue ..  " "..  NS.translate("rogues"))
+    eventDetailsFrame.roguesLabel = roguesLabel
     -- warriors label
-    warriorsLabel = eventDetailsFrame.warriorsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local warriorsLabel = eventDetailsFrame.warriorsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     warriorsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -55)
     warriorsLabel:SetTextColor(classColors["warrior"].R, classColors["warrior"].G, classColors["warrior"].B)
-    warriorsLabel:SetText(classesRecap.warrior .. " tanks")
+    warriorsLabel:SetText(classesRecap.warrior ..  " "..  NS.translate("warriors"))
+    eventDetailsFrame.warriorsLabel = warriorsLabel
     -- paladins label
-    paladinsLabel = eventDetailsFrame.paladinsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local paladinsLabel = eventDetailsFrame.paladinsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     paladinsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -75)
     paladinsLabel:SetTextColor(classColors["paladin"].R, classColors["paladin"].G, classColors["paladin"].B)
-    paladinsLabel:SetText(classesRecap.paladin .. " gays")
+    paladinsLabel:SetText(classesRecap.paladin ..  " "..  NS.translate("paladins"))
+    eventDetailsFrame.paladinsLabel = paladinsLabel
     -- mages label
-    magesLabel = eventDetailsFrame.magesLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local magesLabel = eventDetailsFrame.magesLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     magesLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -95)
     magesLabel:SetTextColor(classColors["mage"].R, classColors["mage"].G, classColors["mage"].B)
-    magesLabel:SetText(classesRecap.mage .. " 1 btn rota")
+    magesLabel:SetText(classesRecap.mage .. " "..   NS.translate("mages"))
+    eventDetailsFrame.magesLabel = magesLabel
     -- warlocks label
-    warlocksLabel = eventDetailsFrame.warlocksLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local warlocksLabel = eventDetailsFrame.warlocksLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     warlocksLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -115)
     warlocksLabel:SetTextColor(classColors["warlock"].R, classColors["warlock"].G, classColors["warlock"].B)
-    warlocksLabel:SetText(classesRecap.warlock .. " necrobites")
+    warlocksLabel:SetText(classesRecap.warlock ..  " "..  NS.translate("warlocks"))
+    eventDetailsFrame.warlocksLabel = warlocksLabel
     -- priests label
-    priestsLabel = eventDetailsFrame.priestsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local priestsLabel = eventDetailsFrame.priestsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     priestsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -135)
     priestsLabel:SetTextColor(classColors["priest"].R, classColors["priest"].G, classColors["priest"].B)
-    priestsLabel:SetText(classesRecap.priest .. " heals")
+    priestsLabel:SetText(classesRecap.priest .. " "..   NS.translate("priests"))
+    eventDetailsFrame.priestsLabel = priestsLabel
     -- druids label
-    druidsLabel = eventDetailsFrame.druidsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local druidsLabel = eventDetailsFrame.druidsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     druidsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -155)
     druidsLabel:SetTextColor(classColors["druid"].R, classColors["druid"].G, classColors["druid"].B)
-    druidsLabel:SetText(classesRecap.druid .. " trucs")
+    druidsLabel:SetText(classesRecap.druid .. " "..   NS.translate("druids"))
+    eventDetailsFrame.druidsLabel = druidsLabel
     -- shamans label
-    shamansLabel = eventDetailsFrame.shamansLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    local shamansLabel = eventDetailsFrame.shamansLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     shamansLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -175)
     shamansLabel:SetTextColor(classColors["shaman"].R, classColors["shaman"].G, classColors["shaman"].B)
-    shamansLabel:SetText(classesRecap.shaman .. " shamans")
+    shamansLabel:SetText(classesRecap.shaman .. " "..   NS.translate("shamans"))
+    eventDetailsFrame.shamansLabel = shamansLabel
 
     eventDetailsFrame:Show()
     UI.mainContainer.eventDetailsFrame = eventDetailsFrame
