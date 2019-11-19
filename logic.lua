@@ -63,7 +63,6 @@ ScepCalendar =
 function ScepCalendar:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("ScepCalendarDB")
     self.db.profiles.dbVersion = self.db.profiles.dbVersion or 1
-    print("DB_VERSION: " .. self.db.profiles.dbVersion)
     self:RequestHello()
     self:BroadcastSubscriptions()
     self:ScheduleRepeatingTimer("BroadcastSubscriptions", 20)
@@ -151,7 +150,6 @@ function ScepCalendar:OnReceiveHello(data, sender)
             sender = sender,
             addonVersion = data.addonVersion
         }
-        print("received version " .. data.version .. " from " .. sender)
         local afterWait = function()
             local highestVersion = {version = self.db.profiles.dbVersion, sender = NS.config.characterName}
 
@@ -252,12 +250,9 @@ end
 
 function ScepCalendar:OnReceiveDbExport(data, sender)
     if (data.rqType == RequestType.REQUEST) then
-        print("Receive DB Export request")
         ScepCalendar:ExportDB(sender)
     elseif data.rqType == RequestType.RESPONSE then
-        print("Receive DB Export response")
         if data.version > self.db.profiles.dbVersion then
-            print("version superior to ours, taking received DB")
             self.db.profiles.events = data.db
             self.db.profiles.dbVersion = data.version
         end
@@ -279,7 +274,6 @@ function ScepCalendar:ExportDB(sender)
         db = self.db.profiles.events,
         version = self.db.profiles.dbVersion
     }
-    print("sending our own DB")
     ScepCalendar:Send(rqData, sender)
 end
 

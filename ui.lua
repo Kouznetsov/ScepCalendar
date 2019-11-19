@@ -291,6 +291,13 @@ function showEventsDetailsFrame(event)
 
     -- Filling roster
     event.roster = NS.ScepCalendar:GetRosterForEvent(event.id)
+    --[[event.roster = { { name = "Nainchasseur", class = "hunter" }, { name = "Nainchasseur", class = "mage" }, { name = "Nainchasseur", class = "druid" },
+                     { name = "Nainchasseur", class = "warrior" },{ name = "Nainchasseur", class = "mage" },{ name = "Nainchasseur", class = "hunter" },
+                     { name = "Nainchasseur", class = "warrior" },{ name = "Nainchasseur", class = "rogue" },{ name = "Nainchasseur", class = "hunter" },
+                     { name = "Nainchasseur", class = "paladin" },{ name = "Nainchasseur", class = "priest" },{ name = "Nainchasseur", class = "warlock" },
+                     { name = "Nainchasseur", class = "warlock" },{ name = "Nainchasseur", class = "hunter" },{ name = "Nainchasseur", class = "warlock" }}
+    ]]
+    local classesRecap = { warrior = 0, paladin = 0, hunter = 0, rogue = 0, priest = 0, warlock = 0, druid = 0, shaman = 0, mage = 0}
 
     for i = 1, #event.roster, 1 do
         local y = -((i - 1) % 23) * 12 - 3
@@ -300,12 +307,55 @@ function showEventsDetailsFrame(event)
         eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetText(event.roster[i].name)
         eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:SetTextColor(cc.R, cc.G, cc.B)
         eventDetailsFrame.rosterFrame.rosterLabelsPool[i]:Show()
+        classesRecap[event.roster[i].class] = classesRecap[event.roster[i].class] + 1
     end
 
     -- classes recap
+    -- hunter label
     huntersLabel = eventDetailsFrame.huntersLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
     huntersLabel:SetTextColor(classColors["hunter"].R, classColors["hunter"].G, classColors["hunter"].B)
-    huntersLabel:SetText()
+    huntersLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -15)
+    huntersLabel:SetText(classesRecap.hunter .. " retards")
+    -- rogues label
+    roguesLabel = eventDetailsFrame.roguesLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    roguesLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -35)
+    roguesLabel:SetTextColor(classColors["rogue"].R, classColors["rogue"].G, classColors["rogue"].B)
+    roguesLabel:SetText(classesRecap.rogue .. " tepu")
+    -- warriors label
+    warriorsLabel = eventDetailsFrame.warriorsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    warriorsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -55)
+    warriorsLabel:SetTextColor(classColors["warrior"].R, classColors["warrior"].G, classColors["warrior"].B)
+    warriorsLabel:SetText(classesRecap.warrior .. " tanks")
+    -- paladins label
+    paladinsLabel = eventDetailsFrame.paladinsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    paladinsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -75)
+    paladinsLabel:SetTextColor(classColors["paladin"].R, classColors["paladin"].G, classColors["paladin"].B)
+    paladinsLabel:SetText(classesRecap.paladin .. " gays")
+    -- mages label
+    magesLabel = eventDetailsFrame.magesLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    magesLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -95)
+    magesLabel:SetTextColor(classColors["mage"].R, classColors["mage"].G, classColors["mage"].B)
+    magesLabel:SetText(classesRecap.mage .. " 1 btn rota")
+    -- warlocks label
+    warlocksLabel = eventDetailsFrame.warlocksLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    warlocksLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -115)
+    warlocksLabel:SetTextColor(classColors["warlock"].R, classColors["warlock"].G, classColors["warlock"].B)
+    warlocksLabel:SetText(classesRecap.warlock .. " necrobites")
+    -- priests label
+    priestsLabel = eventDetailsFrame.priestsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    priestsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -135)
+    priestsLabel:SetTextColor(classColors["priest"].R, classColors["priest"].G, classColors["priest"].B)
+    priestsLabel:SetText(classesRecap.priest .. " heals")
+    -- druids label
+    druidsLabel = eventDetailsFrame.druidsLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    druidsLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -155)
+    druidsLabel:SetTextColor(classColors["druid"].R, classColors["druid"].G, classColors["druid"].B)
+    druidsLabel:SetText(classesRecap.druid .. " trucs")
+    -- shamans label
+    shamansLabel = eventDetailsFrame.shamansLabel or eventDetailsFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    shamansLabel:SetPoint("LEFT", eventDetailsFrame, "LEFT", 260, -175)
+    shamansLabel:SetTextColor(classColors["shaman"].R, classColors["shaman"].G, classColors["shaman"].B)
+    shamansLabel:SetText(classesRecap.shaman .. " shamans")
 
     eventDetailsFrame:Show()
     UI.mainContainer.eventDetailsFrame = eventDetailsFrame
