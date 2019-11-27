@@ -27,6 +27,7 @@ NS.config.isAdmin = function()
             end
         end
     end
+    return isAdmin
 end
 
 
