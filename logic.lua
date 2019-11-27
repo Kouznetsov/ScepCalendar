@@ -26,8 +26,8 @@ local logOptions = {
     broadcastSend = false,
     unhashedSubsReceive = false,
     unhashedSubsSend = false,
-    helloReceive = true,
-    helloSend = true
+    helloReceive = false,
+    helloSend = false
 }
 
 function ScepCalendar_wait(delay, func, ...)
