@@ -95,6 +95,7 @@ function ScepCalendar:OnInitialize()
         ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
         ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
     end
+    self:GenerateSelfHash()
 end
 
 function ScepCalendar:RefreshGuildRoster()
@@ -106,7 +107,7 @@ function ScepCalendar:RefreshGuildRoster()
 
         if online then
             if name ~= nil then
-                table.insert ( guildRoster , ScepCalendar:SlimName(name) );
+                table.insert(guildRoster, ScepCalendar:SlimName(name));
             end
         end
     end
@@ -252,7 +253,7 @@ end
 function ScepCalendar:BroadcastSubscriptions()
     ScepCalendar:Log("broadcastSend", "Sending broadcast")
     ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
-    local hash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
+    local hash = ScepCalendar:GenerateSelfHash()
     local rqData = {
         hash = hash,
         rqType = RequestType.BROADCAST,
@@ -261,11 +262,28 @@ function ScepCalendar:BroadcastSubscriptions()
     ScepCalendar:Send(rqData)
 end
 
+function ScepCalendar:GenerateSelfHash()
+    local subs = ScepCalendar.db.profiles.subscriptions
+    local array = {}
+    local index = 1
+
+    for k, v in pairs(subs) do
+        array[index] = k .. "-" .. v.lastModification
+        index = index + 1
+    end
+    table.sort(array, function(a, b)
+        return a < b
+    end)
+    return NS.utils.sha256(ScepCalendar:Serialize(array))
+end
+
 function ScepCalendar:OnReceiveBroadcastSubscriptions(data, sender)
-    local selfHash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
+    local selfHash = ScepCalendar:GenerateSelfHash()
 
     if data.hash ~= selfHash then
-        ScepCalendar:Log("broadcastReceive", "Received broadcast with different hashes")
+        ScepCalendar:Log("broadcastReceive", "Received broadcast with different hashes from " .. sender)
+        ScepCalendar:Log("broadcastReceive", "our = " .. selfHash)
+        ScepCalendar:Log("broadcastReceive", "oth = " .. data.hash)
         local rqData = {
             request = Requests.UNHASHED_SUBSCRIPTIONS,
             rqType = RequestType.REQUEST
@@ -278,7 +296,6 @@ end
 
 function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
     if data.rqType == RequestType.REQUEST then
-        ScepCalendar:Log("unhashedSubsReceive", "Received unhashed subs request")
         -- Send nos unhashed subs au sender
         ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
         local rqData = {
@@ -286,25 +303,38 @@ function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
             rqType = RequestType.RESPONSE,
             request = Requests.UNHASHED_SUBSCRIPTIONS
         }
-        ScepCalendar:Log("unhashedSubsReceive", "Received unhashed subs request, sending table")
+        ScepCalendar:Log("unhashedSubsReceive", "Received unhashed subs request from " .. sender .. ", sending table")
         ScepCalendar:Send(rqData, sender)
     elseif data.rqType == RequestType.RESPONSE then
         -- Comparer les hash et recuperer les plus recentes subscriptions pour les update dans notre db
         local otherSubs = data.data
         local ourSubs = ScepCalendar.db.profiles.subscriptions or {}
+
+        local ourSubsAmount = 0
+        for k, v in pairs(ourSubs) do
+            ourSubsAmount = ourSubsAmount + 1
+        end
+
+        local otherSubsAmount = 0
         for k, v in pairs(otherSubs) do
             if ourSubs[k] then
+                ScepCalendar:Log("unhashedSubsSend", "Checking player " .. k .. " self.lastModif = " .. ourSubs[k].lastModification .. " other : " .. v.lastModification)
                 -- Si on a déjà une entrée pour ce joueur, comparer le timestamp
                 if ourSubs[k].lastModification < v.lastModification then
                     -- Si le timestamp reçu est supérieur au notre, remplacer notre entry par la leur
+                    ScepCalendar:Log("unhashedSubsSend", "Updated entry for player " .. k)
                     ourSubs[k] = v
                 end
             else
                 -- Si on en a pas, la rajouter
+                ScepCalendar:Log("unhashedSubsSend", "Created entry for player " .. k)
                 ourSubs[k] = v
             end
+            otherSubsAmount = otherSubsAmount + 1
         end
-        ScepCalendar:Log("unhashedSubsSend", "Received unhashed subs response, updated internal DB")
+        ScepCalendar:Log("unhashedSubsSend", "entries at home: " .. ourSubsAmount .. " other subs : " .. otherSubsAmount)
+
+        ScepCalendar:Log("unhashedSubsSend", "Received unhashed subs response from " .. sender .. ", updated internal DB")
         ScepCalendar.db.profiles.subscriptions = ourSubs
     end
 end
