@@ -18,7 +18,17 @@ local RequestType = {
 }
 
 local waitTable = {}
+local guildRoster = {}
 local waitFrame = nil
+
+local logOptions = {
+    broadcastReceive = false,
+    broadcastSend = false,
+    unhashedSubsReceive = false,
+    unhashedSubsSend = false,
+    helloReceive = true,
+    helloSend = true
+}
 
 function ScepCalendar_wait(delay, func, ...)
     if (type(delay) ~= "number" or type(func) ~= "function") then
@@ -37,7 +47,7 @@ function ScepCalendar_wait(delay, func, ...)
                         local f = tremove(waitRecord, 1)
                         local p = tremove(waitRecord, 1)
                         if (d > elapse) then
-                            tinsert(waitTable, i, {d - elapse, f, p})
+                            tinsert(waitTable, i, { d - elapse, f, p })
                             i = i + 1
                         else
                             count = count - 1
@@ -47,37 +57,70 @@ function ScepCalendar_wait(delay, func, ...)
                 end
         )
     end
-    tinsert(waitTable, {delay, func, {...}})
+    tinsert(waitTable, { delay, func, { ... } })
     return true
 end
 
-ScepCalendar =
-LibStub("AceAddon-3.0"):NewAddon(
+ScepCalendar = LibStub("AceAddon-3.0"):NewAddon(
         "ScepCalendar",
         "AceConsole-3.0",
         "AceComm-3.0",
         "AceSerializer-3.0",
-        "AceTimer-3.0"
+        "AceTimer-3.0",
+        "AceEvent-3.0"
 )
+
+function ScepCalendar:Log(tag, message)
+    if logOptions[tag] then
+        print(message)
+    end
+end
 
 function ScepCalendar:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("ScepCalendarDB")
     self.db.profiles.dbVersion = self.db.profiles.dbVersion or 1
     if GetGuildInfo("player") then
+        self:RegisterEvent("GUILD_ROSTER_UPDATE", "RefreshGuildRoster");
         self:RequestHello()
         self:BroadcastSubscriptions()
+        self:RefreshGuildRoster()
         self:ScheduleRepeatingTimer("BroadcastSubscriptions", 30)
 
         -- init
         local playerClass, englishClass = UnitClass("player")
         ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName] = ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
         ScepCalendar.db.profiles.subscriptions[NS.config.characterName].class = string.lower(englishClass)
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification =
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification or time()
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
-        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification or time()
+        ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+        ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
+    end
+end
+
+function ScepCalendar:RefreshGuildRoster()
+    local onlineMembersCount = select(3, GetNumGuildMembers())
+
+    guildRoster = {}
+    for i = 1, onlineMembersCount do
+        local name, _, _, _, _, _, _, _, online = GetGuildRosterInfo(i);
+
+        if online then
+            if name ~= nil then
+                table.insert ( guildRoster , ScepCalendar:SlimName(name) );
+            end
+        end
+    end
+end
+
+function ScepCalendar:SlimName(name)
+    if name ~= nil then
+        if string.find(name, "-", 1) ~= nil then
+            return string.sub(name, 1, string.find(name, "-") - 1);
+        else
+            return name;
+        end
+    else
+        return "";
     end
 end
 
@@ -107,9 +150,16 @@ function ScepCalendar:OnCommCallback(message, channel, sender)
 end
 
 function ScepCalendar:Send(data, sender)
-    local channel
+    local channel = nil
     if sender then
-        channel = "WHISPER"
+        for i = 1, #guildRoster do
+            if guildRoster[i] == sender then
+                channel = "WHISPER"
+            end
+        end
+        if not channel then
+            return
+        end
     else
         channel = "GUILD"
     end
@@ -124,6 +174,7 @@ function ScepCalendar:RequestHello()
         request = Requests.HELLO,
         version = self.db.profiles.dbVersion
     }
+    ScepCalendar:Log("helloSend", "Sending  Hello request with version " .. rqData.version)
     self:Send(rqData)
 end
 
@@ -153,7 +204,7 @@ function ScepCalendar:OnReceiveHello(data, sender)
             addonVersion = data.addonVersion
         }
         local afterWait = function()
-            local highestVersion = {version = self.db.profiles.dbVersion, sender = NS.config.characterName}
+            local highestVersion = { version = self.db.profiles.dbVersion, sender = NS.config.characterName }
 
             for i = 1, #receivedVersions, 1 do
                 if (receivedVersions[i].version > highestVersion.version) then
@@ -199,6 +250,7 @@ function ScepCalendar:GetRosterForEvent(id)
 end
 
 function ScepCalendar:BroadcastSubscriptions()
+    ScepCalendar:Log("broadcastSend", "Sending broadcast")
     ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
     local hash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
     local rqData = {
@@ -211,17 +263,22 @@ end
 
 function ScepCalendar:OnReceiveBroadcastSubscriptions(data, sender)
     local selfHash = NS.utils.sha256(ScepCalendar:Serialize(ScepCalendar.db.profiles.subscriptions))
+
     if data.hash ~= selfHash then
+        ScepCalendar:Log("broadcastReceive", "Received broadcast with different hashes")
         local rqData = {
             request = Requests.UNHASHED_SUBSCRIPTIONS,
             rqType = RequestType.REQUEST
         }
         ScepCalendar:Send(rqData, sender)
+    else
+        ScepCalendar:Log("broadcastReceive", "Received broadcast with same hashes")
     end
 end
 
 function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
     if data.rqType == RequestType.REQUEST then
+        ScepCalendar:Log("unhashedSubsReceive", "Received unhashed subs request")
         -- Send nos unhashed subs au sender
         ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
         local rqData = {
@@ -229,6 +286,7 @@ function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
             rqType = RequestType.RESPONSE,
             request = Requests.UNHASHED_SUBSCRIPTIONS
         }
+        ScepCalendar:Log("unhashedSubsReceive", "Received unhashed subs request, sending table")
         ScepCalendar:Send(rqData, sender)
     elseif data.rqType == RequestType.RESPONSE then
         -- Comparer les hash et recuperer les plus recentes subscriptions pour les update dans notre db
@@ -246,6 +304,7 @@ function ScepCalendar:OnReceiveUnhashedSubscriptions(data, sender)
                 ourSubs[k] = v
             end
         end
+        ScepCalendar:Log("unhashedSubsSend", "Received unhashed subs response, updated internal DB")
         ScepCalendar.db.profiles.subscriptions = ourSubs
     end
 end
@@ -286,10 +345,8 @@ ScepCalendar:RegisterComm(COMMPREFIX, ScepCalendar.OnCommCallback)
 function ScepCalendar:CreateNewEvent(eventData)
     ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
     ScepCalendar.db.profiles.events[eventData.year] = ScepCalendar.db.profiles.events[eventData.year] or {}
-    ScepCalendar.db.profiles.events[eventData.year][eventData.month] =
-    ScepCalendar.db.profiles.events[eventData.year][eventData.month] or {}
-    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] =
-    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] or {}
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month] = ScepCalendar.db.profiles.events[eventData.year][eventData.month] or {}
+    ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day] or {}
     local r = ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day]
     ScepCalendar.db.profiles.events[eventData.year][eventData.month][eventData.day][#r + 1] = eventData
     ScepCalendar.db.profiles.dbVersion = ScepCalendar.db.profiles.dbVersion + 1
@@ -312,12 +369,10 @@ function ScepCalendar:SignupForEvent(event)
     local playerClass, englishClass = UnitClass("player")
 
     ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] = ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
     ScepCalendar.db.profiles.subscriptions[NS.config.characterName].class = string.lower(englishClass)
     ScepCalendar.db.profiles.subscriptions[NS.config.characterName].lastModification = time()
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
     ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[
     #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events + 1
     ] = event.id
@@ -325,10 +380,8 @@ end
 
 function ScepCalendar:IsSubscribedToEvent(id)
     ScepCalendar.db.profiles.subscriptions = ScepCalendar.db.profiles.subscriptions or {}
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] =
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events =
-    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName] = ScepCalendar.db.profiles.subscriptions[NS.config.characterName] or {}
+    ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
 
     for i = 1, #ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events, 1 do
         if ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events[i] == id then

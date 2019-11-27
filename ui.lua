@@ -3,12 +3,6 @@ NS = NS or {}
 
 local UI = {}
 
-SLASH_FRAMESTK1 = "/fs"
-SlashCmdList.FRAMESTK = function()
-    LoadAddOn("Blizzard_DebugTools")
-    FrameStackTooltip_Toggle()
-end
-
 SLASH_SHOWSCEPCALENDAR1 = "/scepcalendar"
 SlashCmdList["SHOWSCEPCALENDAR"] = function()
     if GetGuildInfo("player") then
@@ -17,22 +11,6 @@ SlashCmdList["SHOWSCEPCALENDAR"] = function()
         NS.ScepCalendar:Print(NS.translate("must_have_guild"))
     end
 end
---[[
-Death Knight	196	31	59	0.77	0.12	0.23	#C41F3B	Red †
-Demon Hunter	163	48	201	0.64	0.19	0.79	#A330C9	Dark Magenta
-Druid	255	125	10	1.00	0.49	0.04	#FF7D0A	Orange
-Hunter	169	210	113	0.67	0.83	0.45	#A9D271	Green
-Mage	64	199	235	0.25	0.78	0.92	#40C7EB	Light Blue
-Monk	0	255	150	0.00	1.00	0.59	#00FF96	Spring Green
-Paladin	245	140	186	0.96	0.55	0.73	#F58CBA	Pink
-Priest	255	255	255	1.00	1.00	1.00	#FFFFFF	White*
-Rogue	255	245	105	1.00	0.96	0.41	#FFF569	Yellow*
-Shaman	0	112	222	0.00	0.44	0.87	#0070DE	Blue
-Warlock	135	135	237	0.53	0.53	0.93	#8787ED	Purple
-Warrior	199	156	110	0.78	0.61	0.43	#C79C6E	Tan
-
-]]
-
 
 local classColors = {
     warrior = {R = 0.78, G = 0.61, B = 0.43},
@@ -617,7 +595,7 @@ function showEventsForDay(day)
                     " " .. day .. " " .. monthsStrings[currentMonth]
     )
     UI.mainContainer.eventsForDayFrame.title:SetPoint("TOPLEFT", UI.mainContainer.eventsForDayFrame, "TOPLEFT", 10, -30)
-    if (UI.mainContainer.eventsForDayFrame.createEventBtn == nil and NS.config.isAdmin) then
+    if (UI.mainContainer.eventsForDayFrame.createEventBtn == nil and NS.config.isAdmin()) then
         UI.mainContainer.eventsForDayFrame.createEventBtn =
         CreateFrame("Button", "CreateEventBtn", UI.mainContainer.eventsForDayFrame, "UIPanelButtonTemplate")
         UI.mainContainer.eventsForDayFrame.createEventBtn:SetText(NS.translate("create_event"))
@@ -706,16 +684,16 @@ function generateDayFrames()
             dayFrame:SetPoint("TOPLEFT", UI.mainContainer.monthContainer, "TOPLEFT", xOffset, yOffset)
             dayFrame:Show()
             dayFrame.redDot = dayFrame.redDot or dayFrame:CreateFontString(nil, "OVERLAY", "GameFontRedLarge")
-            dayFrame.redDot:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 7, -6)
+            dayFrame.redDot:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 2, -4)
             if (today.day == dayNumber and today.month == currentMonth and today.year == currentYear) then
-                dayFrame.redDot:SetText("O")
+                dayFrame.redDot:SetText("*")
             else
                 dayFrame.redDot:SetText("")
             end
             dayFrame.redDot2 = dayFrame.redDot2 or dayFrame:CreateFontString(nil, "OVERLAY", "GameFontRedSmall")
             dayFrame.redDot2:SetPoint("TOPLEFT", dayFrame, "TOPLEFT", 10, -10)
             if (today.day == dayNumber and today.month == currentMonth and today.year == currentYear) then
-                dayFrame.redDot2:SetText("X")
+                --dayFrame.redDot2:SetText("X")
             else
                 dayFrame.redDot2:SetText("")
             end

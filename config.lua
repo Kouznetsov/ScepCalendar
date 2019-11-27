@@ -11,21 +11,24 @@ local l = {
     "d43b518b8391f7fc1e525cc1062eaeca40e3f0791fa042dfb427fe9ca09a278c",
     "13d75b53f95d2516ecc4d72b6edafe0aac711704114e77e1332e5e37e3c449f6",
 };
-local c = NS.utils.sha256(UnitName("player"));
+
 NS.config.characterName = UnitName("player");
 
-NS.config.isAdmin = false;
+NS.config.isAdmin = function()
+    local c = NS.utils.sha256(UnitName("player"));
+    local isAdmin = false;
 
-for k, v in next, l do
-    if (v == c) then
-        NS.config.isAdmin = true;
-        break ;
+    if guildRankIndex == 0 then
+        isAdmin = true
+    else
+        for k, v in next, l do
+            if (v == c) then
+                return true
+            end
+        end
     end
 end
 
-if guildRankIndex == 0 then
-    NS.config.isAdmin = true
-end
 
 NS.utils.generateEventId = function()
     return NS.config.characterName .. time()
