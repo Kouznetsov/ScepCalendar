@@ -95,7 +95,6 @@ function ScepCalendar:OnInitialize()
         ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events = ScepCalendar.db.profiles.subscriptions[NS.config.characterName].events or {}
         ScepCalendar.db.profiles.events = ScepCalendar.db.profiles.events or {}
     end
-    self:GenerateSelfHash()
 end
 
 function ScepCalendar:RefreshGuildRoster()
